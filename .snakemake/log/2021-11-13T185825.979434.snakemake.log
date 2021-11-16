@@ -1,0 +1,4 @@
+Building DAG of jobs...
+MissingInputException in line 25 of /home/jgblanc/stratification-data_analysis/snakefile:
+Missing input files for rule merge_chromosomes:
+/scratch/jgblanc/stratification-data_analysis/UKBB_plink-files/chromosome_list.txt

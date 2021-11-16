@@ -1,0 +1,30 @@
+Building DAG of jobs...
+Using shell: /bin/bash
+Provided cores: 1 (use --cores to define parallelism)
+Rules claiming more threads will be scaled down.
+Job counts:
+	count	jobs
+	1	all
+	1	convert_bgen_to_plink
+	2
+
+[Thu Nov 11 14:26:18 2021]
+rule convert_bgen_to_plink:
+    input: /gpfs/data/pierce-lab/uk-biobank-genotypes/ukb_imp_chr21_v3.bgen, /gpfs/data/pierce-lab/uk-biobank-genotypes/ukb17346_imp_chr17_v3_s487378.sample
+    output: /scratch/jgblanc/stratification-data_analysis/UKBB_plink-files/ukb_imp_chr21_v3.psam, /scratch/jgblanc/stratification-data_analysis/UKBB_plink-files/ukb_imp_chr21_v3.pvar, /scratch/jgblanc/stratification-data_analysis/UKBB_plink-files/ukb_imp_chr21_v3.pgen
+    jobid: 1
+    wildcards: chr=21
+
+[Thu Nov 11 14:36:01 2021]
+Finished job 1.
+1 of 2 steps (50%) done
+
+[Thu Nov 11 14:36:01 2021]
+localrule all:
+    input: /scratch/jgblanc/stratification-data_analysis/UKBB_plink-files/ukb_imp_chr21_v3.psam, /scratch/jgblanc/stratification-data_analysis/UKBB_plink-files/ukb_imp_chr22_v3.psam
+    jobid: 0
+
+[Thu Nov 11 14:36:01 2021]
+Finished job 0.
+2 of 2 steps (100%) done
+Complete log: /home/jgblanc/stratification-data_analysis/.snakemake/log/2021-11-11T142618.271944.snakemake.log

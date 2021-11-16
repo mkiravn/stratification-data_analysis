@@ -1,0 +1,28 @@
+Building DAG of jobs...
+Using shell: /bin/bash
+Provided cores: 1 (use --cores to define parallelism)
+Rules claiming more threads will be scaled down.
+Job counts:
+	count	jobs
+	1	all
+	1	convert_bgen_to_plink
+	2
+
+[Thu Nov 11 14:15:46 2021]
+rule convert_bgen_to_plink:
+    input: /gpfs/data/pierce-lab/uk-biobank-genotypes/ukb_imp_chr22_v3.bgen, /gpfs/data/pierce-lab/uk-biobank-genotypes/ukb17346_imp_chr17_v3_s487378.sample
+    output: /scratch/jgblanc/stratification-data_analysis/UKBB_plink-files/ukb_imp_chr22_v3.psam, /scratch/jgblanc/stratification-data_analysis/UKBB_plink-files/ukb_imp_chr22_v3.pvar, /scratch/jgblanc/stratification-data_analysis/UKBB_plink-files/ukb_imp_chr22_v3.pgen
+    jobid: 1
+    wildcards: chr=22
+
+[Thu Nov 11 14:15:46 2021]
+Error in rule convert_bgen_to_plink:
+    jobid: 1
+    output: /scratch/jgblanc/stratification-data_analysis/UKBB_plink-files/ukb_imp_chr22_v3.psam, /scratch/jgblanc/stratification-data_analysis/UKBB_plink-files/ukb_imp_chr22_v3.pvar, /scratch/jgblanc/stratification-data_analysis/UKBB_plink-files/ukb_imp_chr22_v3.pgen
+    shell:
+        plink2 --bgen /gpfs/data/pierce-lab/uk-biobank-genotypes/ukb_imp_chr22_v3.bgen --sample /gpfs/data/pierce-lab/uk-biobank-genotypes/ukb17346_imp_chr17_v3_s487378.sample --maf 0.05 --make-pgen --out /scratch/jgblanc/stratification-data_analysis/UKBB_plink-files/ukb_imp_chr22_v3
+        (one of the commands exited with non-zero exit code; note that snakemake uses bash strict mode!)
+
+Shutting down, this might take some time.
+Exiting because a job execution failed. Look above for error message
+Complete log: /home/jgblanc/stratification-data_analysis/.snakemake/log/2021-11-11T141545.867099.snakemake.log

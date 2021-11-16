@@ -1,0 +1,41 @@
+#!/bin/bash
+ 
+########################
+#                      #
+# Scheduler Directives #
+#                      #
+########################
+ 
+### Set the name of the job, where jobname is a unique name for your job
+#PBS -N plink_test
+ 
+### Select the shell you would like the script to execute within
+#PBS -S /bin/bash
+ 
+### Inform the scheduler of the expected runtime, where walltime=DD:HH:MM:SS
+#PBS -l walltime=2:00:00
+ 
+### Inform the scheduler of the number of CPU cores for your job.
+### This example will allocate four cores on a single node.
+#PBS -l nodes=1:ppn=1
+ 
+### Inform the scheduler of the amount of memory you expect to use.
+### Use units of 'b', 'kb', 'mb', or 'gb'
+#PBS -l mem=4gb
+ 
+### Set the destination for your program's output.
+#PBS -o $HOME/stratification_data-analyis/logs/plink_test.out
+#PBS -e $HOME/myjob.err
+ 
+#################
+#               #
+# Job Execution #
+#               #
+#################
+ 
+# Load the appropriate applications
+module load gcc/6.2.0
+module load blast/2.2.28
+ 
+# Execute the program
+blastall -p blastn -d drosoph.nt -i ecoli.nt

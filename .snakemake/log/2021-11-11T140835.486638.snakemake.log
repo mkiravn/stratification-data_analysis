@@ -1,0 +1,2 @@
+SyntaxError in line 8 of /home/jgblanc/stratification-data_analysis/snakefile:
+Unexpected keyword bgen in rule definition (snakefile, line 8)

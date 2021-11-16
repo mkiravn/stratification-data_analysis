@@ -1,0 +1,21 @@
+Building DAG of jobs...
+Job counts:
+	count	jobs
+	1	all
+	2	convert_bgen_to_plink
+	3
+
+[Sat Nov 13 17:13:01 2021]
+rule convert_bgen_to_plink:
+    input: /gpfs/data/pierce-lab/uk-biobank-genotypes/ukb_imp_chr21_v3.bgen, /gpfs/data/pierce-lab/uk-biobank-genotypes/ukb17346_imp_chr17_v3_s487378.sample
+    output: /scratch/jgblanc/stratification-data_analysis/UKBB_plink-files/ukb_imp_chr21_v3.psam, /scratch/jgblanc/stratification-data_analysis/UKBB_plink-files/ukb_imp_chr21_v3.pvar, /scratch/jgblanc/stratification-data_analysis/UKBB_plink-files/ukb_imp_chr21_v3.pgen
+    jobid: 1
+    wildcards: chr=21
+
+RuleException in line 12 of /home/jgblanc/stratification-data_analysis/snakefile:
+'InputFiles' object has no attribute 'begen'
+  File "/apps/software/gcc-6.2.0/python/3.7.6/lib/python3.7/site-packages/snakemake/executors/__init__.py", line 140, in run_jobs
+  File "/apps/software/gcc-6.2.0/python/3.7.6/lib/python3.7/site-packages/snakemake/executors/__init__.py", line 145, in run
+  File "/apps/software/gcc-6.2.0/python/3.7.6/lib/python3.7/site-packages/snakemake/executors/__init__.py", line 156, in _run
+  File "/apps/software/gcc-6.2.0/python/3.7.6/lib/python3.7/site-packages/snakemake/executors/__init__.py", line 176, in printjob
+  File "/apps/software/gcc-6.2.0/python/3.7.6/lib/python3.7/site-packages/snakemake/executors/__init__.py", line 162, in printjob

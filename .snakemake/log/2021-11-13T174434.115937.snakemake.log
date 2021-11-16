@@ -1,0 +1,31 @@
+Building DAG of jobs...
+Using shell: /bin/bash
+Provided cores: 1 (use --cores to define parallelism)
+Rules claiming more threads will be scaled down.
+Job counts:
+	count	jobs
+	1	all
+	1	merge_chromosomes
+	2
+
+[Sat Nov 13 17:44:34 2021]
+rule merge_chromosomes:
+    input: /scratch/jgblanc/stratification-data_analysis/UKBB_plink-files/ukb_imp_chr21_v3.psam, /scratch/jgblanc/stratification-data_analysis/UKBB_plink-files/ukb_imp_chr22_v3.psam, /scratch/jgblanc/stratification-data_analysis/UKBB_plink-files/ukb_imp_chr21_v3.pvar, /scratch/jgblanc/stratification-data_analysis/UKBB_plink-files/ukb_imp_chr22_v3.pvar, /scratch/jgblanc/stratification-data_analysis/UKBB_plink-files/ukb_imp_chr21_v3.pgen, /scratch/jgblanc/stratification-data_analysis/UKBB_plink-files/ukb_imp_chr22_v3.pgen, /scratch/jgblanc/stratification-data_analysis/UKBB_plink-files/chromosome_list.txt
+    output: /scratch/jgblanc/stratification-data_analysis/UKBB_plink-files/ukb_imp_genos.psam, /scratch/jgblanc/stratification-data_analysis/UKBB_plink-files/ukb_imp_genos.pvar, /scratch/jgblanc/stratification-data_analysis/UKBB_plink-files/ukb_imp_genos.pgen
+    jobid: 1
+
+Terminating processes on user request, this might take some time.
+[Sat Nov 13 18:57:12 2021]
+Error in rule merge_chromosomes:
+    jobid: 1
+    output: /scratch/jgblanc/stratification-data_analysis/UKBB_plink-files/ukb_imp_genos.psam, /scratch/jgblanc/stratification-data_analysis/UKBB_plink-files/ukb_imp_genos.pvar, /scratch/jgblanc/stratification-data_analysis/UKBB_plink-files/ukb_imp_genos.pgen
+    shell:
+        
+	plink2 --pmerge-list /scratch/jgblanc/stratification-data_analysis/UKBB_plink-files/chromosome_list.txt --out ukb_imp_genos
+	gzip /scratch/jgblanc/stratification-data_analysis/UKBB_plink-files/ukb_imp_chr21_v3.psam /scratch/jgblanc/stratification-data_analysis/UKBB_plink-files/ukb_imp_chr22_v3.psam
+	gzip /scratch/jgblanc/stratification-data_analysis/UKBB_plink-files/ukb_imp_chr21_v3.pvar /scratch/jgblanc/stratification-data_analysis/UKBB_plink-files/ukb_imp_chr22_v3.pvar
+	gzip /scratch/jgblanc/stratification-data_analysis/UKBB_plink-files/ukb_imp_chr21_v3.pgen /scratch/jgblanc/stratification-data_analysis/UKBB_plink-files/ukb_imp_chr22_v3.pgen
+	
+        (one of the commands exited with non-zero exit code; note that snakemake uses bash strict mode!)
+
+Complete log: /home/jgblanc/stratification-data_analysis/.snakemake/log/2021-11-13T174434.115937.snakemake.log
