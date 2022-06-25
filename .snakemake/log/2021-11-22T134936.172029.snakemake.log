@@ -1,0 +1,19 @@
+Building DAG of jobs...
+Using shell: /bin/bash
+Provided cores: 1 (use --cores to define parallelism)
+Rules claiming more threads will be scaled down.
+Job counts:
+	count	jobs
+	1	subset_1KG_IDs_EUR
+	1
+
+[Mon Nov 22 13:49:36 2021]
+rule subset_1KG_IDs_EUR:
+    input: /scratch/jgblanc/stratification-data_analysis/1000G_Genotypes/igsr_samples.tsv
+    output: /scratch/jgblanc/stratification-data_analysis/1000G_Genotypes/FIN_IDs.txt, /scratch/jgblanc/stratification-data_analysis/1000G_Genotypes/Mainland_IDs.txt
+    jobid: 0
+
+[Mon Nov 22 13:49:36 2021]
+Finished job 0.
+1 of 1 steps (100%) done
+Complete log: /home/jgblanc/stratification-data_analysis/.snakemake/log/2021-11-22T134936.172029.snakemake.log

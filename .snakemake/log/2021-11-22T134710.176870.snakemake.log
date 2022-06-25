@@ -1,0 +1,2 @@
+SyntaxError in line 34 of /home/jgblanc/stratification-data_analysis/snakefile:
+Command must be given as string after the shell keyword. (snakefile, line 34)

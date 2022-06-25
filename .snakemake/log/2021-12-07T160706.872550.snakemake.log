@@ -1,0 +1,24 @@
+Building DAG of jobs...
+Job counts:
+	count	jobs
+	1	get_freq
+	1
+
+[Tue Dec  7 16:07:07 2021]
+rule get_freq:
+    input: /scratch/jgblanc/stratification-data_analysis/1000G_Genotypes/data/ALL.phase3_shapeit2_mvncall_integrated_v5a.20130502.genotypes.EUR.fam, /scratch/jgblanc/stratification-data_analysis/1000G_Genotypes/data/ALL.phase3_shapeit2_mvncall_integrated_v5a.20130502.genotypes.EUR.bim, /scratch/jgblanc/stratification-data_analysis/1000G_Genotypes/data/ALL.phase3_shapeit2_mvncall_integrated_v5a.20130502.genotypes.EUR.bed, /scratch/jgblanc/stratification-data_analysis/1000G_Genotypes/FIN_IDs.txt, /scratch/jgblanc/stratification-data_analysis/1000G_Genotypes/Mainland_IDs.txt
+    output: /scratch/jgblanc/stratification-data_analysis/1000G_Genotypes/FIN.freq, /scratch/jgblanc/stratification-data_analysis/1000G_Genotypes/Mainland.freq
+    jobid: 0
+
+InputFunctionException in line 43 of /home/jgblanc/stratification-data_analysis/snakefile:
+Error:
+  AttributeError: 'builtin_function_or_method' object has no attribute 'fam'
+Wildcards:
+
+Traceback:
+  File "/home/jgblanc/stratification-data_analysis/snakefile", line 54, in <lambda>
+  File "/apps/software/gcc-6.2.0/python/3.7.6/lib/python3.7/site-packages/snakemake/executors/__init__.py", line 140, in run_jobs
+  File "/apps/software/gcc-6.2.0/python/3.7.6/lib/python3.7/site-packages/snakemake/executors/__init__.py", line 145, in run
+  File "/apps/software/gcc-6.2.0/python/3.7.6/lib/python3.7/site-packages/snakemake/executors/__init__.py", line 156, in _run
+  File "/apps/software/gcc-6.2.0/python/3.7.6/lib/python3.7/site-packages/snakemake/executors/__init__.py", line 176, in printjob
+  File "/apps/software/gcc-6.2.0/python/3.7.6/lib/python3.7/site-packages/snakemake/executors/__init__.py", line 162, in printjob

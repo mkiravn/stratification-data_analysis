@@ -1,0 +1,3 @@
+CreateRuleException in line 39 of /home/jgblanc/stratification-data_analysis/snakefile:
+The name subset_1KG_IDs_EUR is already used by another rule
+  File "/home/jgblanc/stratification-data_analysis/snakefile", line 39, in <module>

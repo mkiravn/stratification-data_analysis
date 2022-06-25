@@ -1,0 +1,4 @@
+Building DAG of jobs...
+WildcardError in line 47 of /home/jgblanc/stratification-data_analysis/snakefile:
+Wildcards in input files cannot be determined from output files:
+'TG_EUR'

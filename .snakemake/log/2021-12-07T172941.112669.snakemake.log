@@ -1,0 +1,30 @@
+Building DAG of jobs...
+Using shell: /bin/bash
+Provided cores: 1 (use --cores to define parallelism)
+Rules claiming more threads will be scaled down.
+Job counts:
+	count	jobs
+	1	list_TP_SNPIDs
+	1
+
+[Tue Dec  7 17:29:41 2021]
+rule list_TP_SNPIDs:
+    input: /scratch/jgblanc/stratification-data_analysis/1000G_Genotypes/data/ALL.phase3_shapeit2_mvncall_integrated_v5a.20130502.genotypes.EUR.bim, /scratch/jgblanc/stratification-data_analysis/1000G_Genotypes/data/ALL.phase3_shapeit2_mvncall_integrated_v5a.20130502.genotypes.EUR.bim, /scratch/jgblanc/stratification-data_analysis/1000G_Genotypes/data/ALL.phase3_shapeit2_mvncall_integrated_v5a.20130502.genotypes.EUR.bed
+    output: /scratch/jgblanc/stratification-data_analysis/1000G_Genotypes/TestPanel_SNPIDs.txt, /scratch/jgblanc/stratification-data_analysis/1000G_Genotypes/data/ALL.phase3_shapeit2_mvncall_integrated_v5a.20130502.genotypes.EUR_maf0.05.bim, /scratch/jgblanc/stratification-data_analysis/1000G_Genotypes/data/ALL.phase3_shapeit2_mvncall_integrated_v5a.20130502.genotypes.EUR_maf_0.05.bim, /scratch/jgblanc/stratification-data_analysis/1000G_Genotypes/data/ALL.phase3_shapeit2_mvncall_integrated_v5a.20130502.genotypes.EUR_maf0.05.bed
+    jobid: 0
+    wildcards: root=/scratch/jgblanc/stratification-data_analysis
+
+[Tue Dec  7 17:29:41 2021]
+Error in rule list_TP_SNPIDs:
+    jobid: 0
+    output: /scratch/jgblanc/stratification-data_analysis/1000G_Genotypes/TestPanel_SNPIDs.txt, /scratch/jgblanc/stratification-data_analysis/1000G_Genotypes/data/ALL.phase3_shapeit2_mvncall_integrated_v5a.20130502.genotypes.EUR_maf0.05.bim, /scratch/jgblanc/stratification-data_analysis/1000G_Genotypes/data/ALL.phase3_shapeit2_mvncall_integrated_v5a.20130502.genotypes.EUR_maf_0.05.bim, /scratch/jgblanc/stratification-data_analysis/1000G_Genotypes/data/ALL.phase3_shapeit2_mvncall_integrated_v5a.20130502.genotypes.EUR_maf0.05.bed
+    shell:
+         
+	plink --bfile {wildcards.scratch}/1000G_Genotypes/data/ALL.phase3_shapeit2_mvncall_integrated_v5a.20130502.genotypes.EUR --maf 0.05 --out {wildcards.scratch}/1000G_Genotypes/data/ALL.phase3_shapeit2_mvncall_integrated_v5a.20130502.genotypes.EUR_maf0.05
+        cut -f2 {wildcards.scratch}/1000G_Genotypes/data/ALL.phase3_shapeit2_mvncall_integrated_v5a.20130502.genotypes.EUR_maf0.05.bim > /scratch/jgblanc/stratification-data_analysis/1000G_Genotypes/TestPanel_SNPIDs.txt
+        
+        (one of the commands exited with non-zero exit code; note that snakemake uses bash strict mode!)
+
+Shutting down, this might take some time.
+Exiting because a job execution failed. Look above for error message
+Complete log: /home/jgblanc/stratification-data_analysis/.snakemake/log/2021-12-07T172941.112669.snakemake.log

@@ -1,0 +1,4 @@
+Building DAG of jobs...
+MissingInputException in line 9 of /home/jgblanc/stratification-data_analysis/snakefile:
+Missing input files for rule list_UKBB_SNPIDs_chromosome:
+/gpfs/data/pierce-lab/uk-biobank-genotypes/ukb_imp_chr{chr}_v3.bgen

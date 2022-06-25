@@ -1,0 +1,22 @@
+Building DAG of jobs...
+Using shell: /bin/bash
+Provided cores: 1 (use --cores to define parallelism)
+Rules claiming more threads will be scaled down.
+Job counts:
+	count	jobs
+	1	subset_1KG_IDs_EUR
+	1
+
+[Mon Nov 22 14:24:26 2021]
+rule subset_1KG_IDs_EUR:
+    input: /scratch/jgblanc/stratification-data_analysis/1000G_Genotypes/igsr_samples.tsv
+    output: /scratch/jgblanc/stratification-data_analysis/1000G_Genotypes/FIN_IDs.txt, /scratch/jgblanc/stratification-data_analysis/1000G_Genotypes/Mainland_IDs.txt
+    jobid: 0
+
+RuleException in line 27 of /home/jgblanc/stratification-data_analysis/snakefile:
+NameError: The name 'print 0,$0' is unknown in this context. Please make sure that you defined that variable. Also note that braces not used for variable access have to be escaped by repeating them, i.e. {{print $1}}
+  File "/apps/software/gcc-6.2.0/python/3.7.6/lib/python3.7/site-packages/snakemake/executors/__init__.py", line 140, in run_jobs
+  File "/apps/software/gcc-6.2.0/python/3.7.6/lib/python3.7/site-packages/snakemake/executors/__init__.py", line 441, in run
+  File "/apps/software/gcc-6.2.0/python/3.7.6/lib/python3.7/site-packages/snakemake/executors/__init__.py", line 230, in _run
+  File "/apps/software/gcc-6.2.0/python/3.7.6/lib/python3.7/site-packages/snakemake/executors/__init__.py", line 156, in _run
+  File "/apps/software/gcc-6.2.0/python/3.7.6/lib/python3.7/site-packages/snakemake/executors/__init__.py", line 162, in printjob

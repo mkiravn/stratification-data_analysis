@@ -1,0 +1,20 @@
+Building DAG of jobs...
+Using shell: /bin/bash
+Provided cores: 1 (use --cores to define parallelism)
+Rules claiming more threads will be scaled down.
+Job counts:
+	count	jobs
+	1	list_TP_SNPIDs
+	1
+
+[Tue Dec  7 17:36:47 2021]
+rule list_TP_SNPIDs:
+    input: /scratch/jgblanc/stratification-data_analysis/1000G_Genotypes/data/ALL.phase3_shapeit2_mvncall_integrated_v5a.20130502.genotypes.EUR.bim, /scratch/jgblanc/stratification-data_analysis/1000G_Genotypes/data/ALL.phase3_shapeit2_mvncall_integrated_v5a.20130502.genotypes.EUR.bim, /scratch/jgblanc/stratification-data_analysis/1000G_Genotypes/data/ALL.phase3_shapeit2_mvncall_integrated_v5a.20130502.genotypes.EUR.bed
+    output: /scratch/jgblanc/stratification-data_analysis/1000G_Genotypes/TestPanel_SNPIDs.txt, /scratch/jgblanc/stratification-data_analysis/1000G_Genotypes/data/ALL.phase3_shapeit2_mvncall_integrated_v5a.20130502.genotypes.EUR_maf0.05.fam, /scratch/jgblanc/stratification-data_analysis/1000G_Genotypes/data/ALL.phase3_shapeit2_mvncall_integrated_v5a.20130502.genotypes.EUR_maf0.05.bim, /scratch/jgblanc/stratification-data_analysis/1000G_Genotypes/data/ALL.phase3_shapeit2_mvncall_integrated_v5a.20130502.genotypes.EUR_maf0.05.bed
+    jobid: 0
+    wildcards: root=/scratch/jgblanc/stratification-data_analysis
+
+[Tue Dec  7 17:37:38 2021]
+Finished job 0.
+1 of 1 steps (100%) done
+Complete log: /home/jgblanc/stratification-data_analysis/.snakemake/log/2021-12-07T173646.817891.snakemake.log

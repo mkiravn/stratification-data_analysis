@@ -1,0 +1,18 @@
+Building DAG of jobs...
+Job counts:
+	count	jobs
+	1	subset_1KG_IDs_EUR
+	1
+
+[Mon Nov 22 13:47:39 2021]
+rule subset_1KG_IDs_EUR:
+    output: /scratch/jgblanc/stratification-data_analysis/1000G_Genotypes/FIN_IDs.txt, /scratch/jgblanc/stratification-data_analysis/1000G_Genotypes/Mainland_IDs.txt
+    jobid: 0
+
+RuleException in line 27 of /home/jgblanc/stratification-data_analysis/snakefile:
+'OutputFiles' object has no attribute 'mainland'
+  File "/apps/software/gcc-6.2.0/python/3.7.6/lib/python3.7/site-packages/snakemake/executors/__init__.py", line 140, in run_jobs
+  File "/apps/software/gcc-6.2.0/python/3.7.6/lib/python3.7/site-packages/snakemake/executors/__init__.py", line 145, in run
+  File "/apps/software/gcc-6.2.0/python/3.7.6/lib/python3.7/site-packages/snakemake/executors/__init__.py", line 156, in _run
+  File "/apps/software/gcc-6.2.0/python/3.7.6/lib/python3.7/site-packages/snakemake/executors/__init__.py", line 176, in printjob
+  File "/apps/software/gcc-6.2.0/python/3.7.6/lib/python3.7/site-packages/snakemake/executors/__init__.py", line 162, in printjob

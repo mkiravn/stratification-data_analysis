@@ -1,0 +1,29 @@
+Building DAG of jobs...
+Using shell: /bin/bash
+Provided cores: 1 (use --cores to define parallelism)
+Rules claiming more threads will be scaled down.
+Job counts:
+	count	jobs
+	1	subset_1KG_IDs_EUR
+	1
+
+[Mon Nov 22 14:24:56 2021]
+rule subset_1KG_IDs_EUR:
+    input: /scratch/jgblanc/stratification-data_analysis/1000G_Genotypes/igsr_samples.tsv
+    output: /scratch/jgblanc/stratification-data_analysis/1000G_Genotypes/FIN_IDs.txt, /scratch/jgblanc/stratification-data_analysis/1000G_Genotypes/Mainland_IDs.txt
+    jobid: 0
+
+[Mon Nov 22 14:24:56 2021]
+Error in rule subset_1KG_IDs_EUR:
+    jobid: 0
+    output: /scratch/jgblanc/stratification-data_analysis/1000G_Genotypes/FIN_IDs.txt, /scratch/jgblanc/stratification-data_analysis/1000G_Genotypes/Mainland_IDs.txt
+    shell:
+        
+	awk '$4 == "FIN"' /scratch/jgblanc/stratification-data_analysis/1000G_Genotypes/igsr_samples.tsv | cut -f 1 | awk '{print 0,$0} > /scratch/jgblanc/stratification-data_analysis/1000G_Genotypes/FIN_IDs.txt
+	awk '$4 == "GBR" || $4 == "CEU" ||  $4 == "IBS"  ||  $4 == "TSI" | cut -f 1 | awk '{print 0,$0}' /scratch/jgblanc/stratification-data_analysis/1000G_Genotypes/igsr_samples.tsv > /scratch/jgblanc/stratification-data_analysis/1000G_Genotypes/Mainland_IDs.txt
+	
+        (one of the commands exited with non-zero exit code; note that snakemake uses bash strict mode!)
+
+Shutting down, this might take some time.
+Exiting because a job execution failed. Look above for error message
+Complete log: /home/jgblanc/stratification-data_analysis/.snakemake/log/2021-11-22T142456.139959.snakemake.log

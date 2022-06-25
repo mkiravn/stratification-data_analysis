@@ -1,0 +1,3 @@
+TypeError in line 49 of /home/jgblanc/stratification-data_analysis/snakefile:
+unsupported operand type(s) for +: 'set' and 'str'
+  File "/home/jgblanc/stratification-data_analysis/snakefile", line 49, in <module>

@@ -1,0 +1,29 @@
+Building DAG of jobs...
+Using shell: /bin/bash
+Provided cores: 1 (use --cores to define parallelism)
+Rules claiming more threads will be scaled down.
+Job counts:
+	count	jobs
+	1	list_TP_SNPIDs
+	1
+
+[Tue Dec  7 17:34:54 2021]
+rule list_TP_SNPIDs:
+    input: /scratch/jgblanc/stratification-data_analysis/1000G_Genotypes/data/ALL.phase3_shapeit2_mvncall_integrated_v5a.20130502.genotypes.EUR.bim, /scratch/jgblanc/stratification-data_analysis/1000G_Genotypes/data/ALL.phase3_shapeit2_mvncall_integrated_v5a.20130502.genotypes.EUR.bim, /scratch/jgblanc/stratification-data_analysis/1000G_Genotypes/data/ALL.phase3_shapeit2_mvncall_integrated_v5a.20130502.genotypes.EUR.bed
+    output: /scratch/jgblanc/stratification-data_analysis/1000G_Genotypes/TestPanel_SNPIDs.txt, /scratch/jgblanc/stratification-data_analysis/1000G_Genotypes/data/ALL.phase3_shapeit2_mvncall_integrated_v5a.20130502.genotypes.EUR_maf0.05.bim, /scratch/jgblanc/stratification-data_analysis/1000G_Genotypes/data/ALL.phase3_shapeit2_mvncall_integrated_v5a.20130502.genotypes.EUR_maf_0.05.bim, /scratch/jgblanc/stratification-data_analysis/1000G_Genotypes/data/ALL.phase3_shapeit2_mvncall_integrated_v5a.20130502.genotypes.EUR_maf0.05.bed
+    jobid: 0
+    wildcards: root=/scratch/jgblanc/stratification-data_analysis
+
+Waiting at most 5 seconds for missing files.
+MissingOutputException in line 40 of /home/jgblanc/stratification-data_analysis/snakefile:
+Job Missing files after 5 seconds:
+/scratch/jgblanc/stratification-data_analysis/1000G_Genotypes/data/ALL.phase3_shapeit2_mvncall_integrated_v5a.20130502.genotypes.EUR_maf_0.05.bim
+This might be due to filesystem latency. If that is the case, consider to increase the wait time with --latency-wait.
+Job id: 0 completed successfully, but some output files are missing. 0
+  File "/apps/software/gcc-6.2.0/python/3.7.6/lib/python3.7/site-packages/snakemake/executors/__init__.py", line 584, in handle_job_success
+  File "/apps/software/gcc-6.2.0/python/3.7.6/lib/python3.7/site-packages/snakemake/executors/__init__.py", line 259, in handle_job_success
+Removing output files of failed job list_TP_SNPIDs since they might be corrupted:
+/scratch/jgblanc/stratification-data_analysis/1000G_Genotypes/TestPanel_SNPIDs.txt, /scratch/jgblanc/stratification-data_analysis/1000G_Genotypes/data/ALL.phase3_shapeit2_mvncall_integrated_v5a.20130502.genotypes.EUR_maf0.05.bim, /scratch/jgblanc/stratification-data_analysis/1000G_Genotypes/data/ALL.phase3_shapeit2_mvncall_integrated_v5a.20130502.genotypes.EUR_maf0.05.bed
+Shutting down, this might take some time.
+Exiting because a job execution failed. Look above for error message
+Complete log: /home/jgblanc/stratification-data_analysis/.snakemake/log/2021-12-07T173454.619850.snakemake.log
