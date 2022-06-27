@@ -22,7 +22,7 @@ rule list_UKBB_SNPIDs_chromosome:
 	"""
 
 
-## Data processing for Sardinia analysis
+## Data processing for EUR analysis 
 
 # Get separate list of mainland IDs and test sample IDs (FINs for now)
 rule subset_1KG_IDs_EUR:
