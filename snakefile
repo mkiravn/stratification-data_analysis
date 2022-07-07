@@ -1,25 +1,79 @@
 # Snakefile to run UKBB  data analysis
 CHR =["22"]
-ROOT = ["/scratch/jgblanc/stratification-data_analysis"]
+ROOT = ["/gpfs/data/berg-lab/jgblanc/stratification-data_analysis"]
 
-#rule all:
-#    input:
-#        "/scratch/jgblanc/stratification-data_analysis/UKBB_plink-files/ukb_imp_genos.psam"
+rule all:
+    input:
+        expand("{root}/data/hgdp/variant_freq/hgdp_wgs.20190516.full.chr{chr}.afreq", root=ROOT,  chr=CHR)
 
-rule list_UKBB_SNPIDs_chromosome:
+## UKBB Genotype data processing
+
+rule UKBB_begen_to_plink2:
     input:
         bgen="/gpfs/data/pierce-lab/uk-biobank-genotypes/ukb_imp_chr{chr}_v3.bgen",
-        sample="/gpfs/data/pierce-lab/uk-biobank-genotypes/ukb17346_imp_chr17_v3_s487378.sample"
+        sample="/gpfs/data/berg-lab/data/ukbb/ukb27386_imp_v3_s487324.sample",
+	pheno_ID="{root}/data/phenotypes/StandingHeight_50_IDs.txt"
     output:
-        ID="{root}/UKBB/variant_IDs/SNPs_{chr}.txt"
+        psam="{root}/data/ukbb/plink2-files/ukb_imp_chr{chr}_v3.psam",
+	pvar="{root}/data/ukbb/plink2-files/ukb_imp_chr{chr}_v3.pvar",
+	ppgen="{root}/data/ukbb/plink2-files/ukb_imp_chr{chr}_v3.pgen"
     params:
-        prefix="/scratch/jgblanc/stratification-data_analysis/UKBB/temp"
+        prefix="{root}/data/ukbb/plink2-files/ukb_imp_chr{chr}_v3"
     shell:
         """
-	plink2 --bgen {input.bgen} ref-first --sample {input.sample} --maf 0.05 --rm-dup exclude-all --make-bgen --out {params.prefix} 
-	cut -f 2 {params.prefix}.bim > {output.ID}
-	rm {params.prefix}.*
+	plink2 --bgen {input.bgen} ref-first \
+	--sample {input.sample} \
+	--keep {input.pheno_ID} \
+	--maf 0.01 \
+	--rm-dup exclude-all \
+	--snps-only \
+	--max-alleles 2 \
+	--make-pgen \
+	--set-all-var-ids @:# \
+	--threads 8 \
+	--memory 38000 \
+	--out {params.prefix} 
 	"""
+
+rule UKBB_freq:
+    input:
+        psam="{root}/data/ukbb/plink2-files/ukb_imp_chr{chr}_v3.psam",
+        pvar="{root}/data/ukbb/plink2-files/ukb_imp_chr{chr}_v3.pvar",
+        ppgen="{root}/data/ukbb/plink2-files/ukb_imp_chr{chr}_v3.pgen"
+    output:
+        freq="{root}/data/ukbb/variant_freq/ukb_imp_chr{chr}_v3.afreq"
+    params:
+        prefix_out="{root}/data/ukbb/variant_freq/ukb_imp_chr{chr}_v3",
+	prefix_in="{root}/data/ukbb/plink2-files/ukb_imp_chr{chr}_v3"
+    shell:
+        """
+        plink2 --pfile {params.prefix_in} --freq \
+        --threads 8 \
+        --memory 38000 \
+        --out {params.prefix_out}
+        """
+
+## HGDP genotype data processing
+
+rule HGDP_freq:
+    input:
+        psam="/gpfs/data/berg-lab/data/HGDP/plink2-files-hg19-snp-only-flipped/hgdp_wgs.20190516.full.chr{chr}.psam",
+        pvar="/gpfs/data/berg-lab/data/HGDP/plink2-files-hg19-snp-only-flipped/hgdp_wgs.20190516.full.chr{chr}.pvar",
+        ppgen="/gpfs/data/berg-lab/data/HGDP/plink2-files-hg19-snp-only-flipped/hgdp_wgs.20190516.full.chr{chr}.pgen"
+    output:
+        freq="{root}/data/hgdp/variant_freq/hgdp_wgs.20190516.full.chr{chr}.afreq"
+    params:
+        prefix_in="/gpfs/data/berg-lab/data/HGDP/plink2-files-hg19-snp-only-flipped/hgdp_wgs.20190516.full.chr{chr}",
+        prefix_out="{root}/data/hgdp/variant_freq/hgdp_wgs.20190516.full.chr{chr}"
+    shell:
+        """
+        plink2 --pfile {params.prefix_in} --maf 0.01 \
+        --freq \
+	--threads 8 \
+        --memory 38000 \
+        --out {params.prefix_out}
+        """
+
 
 
 ## Data processing for EUR analysis 
