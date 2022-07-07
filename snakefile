@@ -55,19 +55,45 @@ rule UKBB_freq:
 
 ## HGDP genotype data processing
 
+rule HGDP_make_plink2:
+    input:
+        psam="/gpfs/data/berg-lab/data/HGDP/plink2-files-hg19/hgdp_wgs.20190516.full.chr{chr}.psam",
+        pvar="/gpfs/data/berg-lab/data/HGDP/plink2-files-hg19/hgdp_wgs.20190516.full.chr{chr}.pvar",
+        ppgen="/gpfs/data/berg-lab/data/HGDP/plink2-files-hg19/hgdp_wgs.20190516.full.chr{chr}.pgen"
+    output:
+        psam="{root}/data/hgdp/plink2-files/hgdp_wgs.20190516.full.chr{chr}.psam",
+        pvar="{root}/data/hgdp/plink2-files/hgdp_wgs.20190516.full.chr{chr}.pvar",
+        ppgen="{root}/data/hgdp/plink2-files/hgdp_wgs.20190516.full.chr{chr}.pgen"
+    params:
+        prefix_out="{root}/data/hgdp/plink2-files/hgdp_wgs.20190516.full.chr{chr}",
+	prefix_in="/gpfs/data/berg-lab/data/HGDP/plink2-files-hg19/hgdp_wgs.20190516.full.chr{chr}"
+    shell:
+        """
+        plink2 --pfile {params.prefix_in} \
+        --maf 0.01 \
+        --rm-dup exclude-all \
+        --snps-only \
+        --max-alleles 2 \
+        --make-pgen \
+        --set-all-var-ids @:# \
+        --threads 8 \
+        --memory 38000 \
+        --out {params.prefix_out}
+        """
+
 rule HGDP_freq:
     input:
-        psam="/gpfs/data/berg-lab/data/HGDP/plink2-files-hg19-snp-only-flipped/hgdp_wgs.20190516.full.chr{chr}.psam",
-        pvar="/gpfs/data/berg-lab/data/HGDP/plink2-files-hg19-snp-only-flipped/hgdp_wgs.20190516.full.chr{chr}.pvar",
-        ppgen="/gpfs/data/berg-lab/data/HGDP/plink2-files-hg19-snp-only-flipped/hgdp_wgs.20190516.full.chr{chr}.pgen"
+        psam="{root}/data/hgdp/plink2-files/hgdp_wgs.20190516.full.chr{chr}.psam",
+        pvar="{root}/data/hgdp/plink2-files/hgdp_wgs.20190516.full.chr{chr}.pvar",
+        ppgen="{root}/data/hgdp/plink2-files/hgdp_wgs.20190516.full.chr{chr}.pgen"
     output:
         freq="{root}/data/hgdp/variant_freq/hgdp_wgs.20190516.full.chr{chr}.afreq"
     params:
-        prefix_in="/gpfs/data/berg-lab/data/HGDP/plink2-files-hg19-snp-only-flipped/hgdp_wgs.20190516.full.chr{chr}",
+        prefix_in="{root}/data/hgdp/plink2-files/hgdp_wgs.20190516.full.chr{chr}",
         prefix_out="{root}/data/hgdp/variant_freq/hgdp_wgs.20190516.full.chr{chr}"
     shell:
         """
-        plink2 --pfile {params.prefix_in} --maf 0.01 \
+        plink2 --pfile {params.prefix_in} \
         --freq \
 	--threads 8 \
         --memory 38000 \
