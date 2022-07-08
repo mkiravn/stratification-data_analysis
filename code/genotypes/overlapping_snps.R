@@ -34,6 +34,5 @@ colnames(flipped) <- c("#CHROM", "ID", "REF", "ALT")
 
 # Get complete list of SNPs and list the reference allele in UKBB
 out <- rbind(matched, flipped) %>% select(ID, REF)
-out <- as.data.frame(cbind(out$ID, out$REF))
 fwrite(out,outfile, row.names = F, col.names = T, quote = F, sep = "\t")
 
