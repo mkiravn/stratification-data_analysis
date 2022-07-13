@@ -11,7 +11,7 @@ rule all:
 rule UKBB_begen_to_plink2:
     input:
         bgen="/gpfs/data/pierce-lab/uk-biobank-genotypes/ukb_imp_chr{chr}_v3.bgen",
-        sample="/gpfs/data/berg-lab/data/ukbb/ukb27386_imp_v3_s487324.sample",
+        sample="/gpfs/data/berg-lab/data/ukbb/ukb27386_imp_v3_s487324.sample", ## Need to fix sample file 
 	pheno_ID="{root}/data/phenotypes/StandingHeight_50_IDs.txt"
     output:
         psam="{root}/data/ukbb/plink2-files/ukb_imp_chr{chr}_v3.psam",
