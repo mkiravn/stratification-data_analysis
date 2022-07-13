@@ -1,0 +1,39 @@
+---
+title: "Check_Samples"
+author: "Jennifer Blanc"
+date: "7/8/2022"
+output: html_document
+---
+
+```{r setup, include=FALSE}
+knitr::opts_chunk$set(echo = TRUE)
+rm(list=ls())
+library(data.table)
+library(tidyverse)
+```
+
+
+```{r}
+# Read in sample file from Xin's group
+sample_file <- fread("../output/transfer/ukb27386_imp_v3_s487324.sample.gz")
+sample_file <- sample_file[2:nrow(sample_file),] 
+
+# Read in height file from our data
+height <- fread("../output/transfer/standing_height_50.txt.gz")
+height <- height %>% select("50-0.0", "50-1.0") 
+colnames(height) <- c("eid", "height")
+
+# Read in genetic sex file from our data 
+gsex <- fread("../output/transfer/genetic_sex_22001.txt.gz")
+gsex <- gsex %>% select("22001-0.0", "V3")
+colnames(gsex) <- c("eid", "sex")
+```
+
+```{r}
+# Merge sample and genetic sex file
+df <- inner_join(sample_file, gsex, by=c("ID_1" = "eid"))
+
+# Merge height and genetic sex
+df2 <- inner_join(height, gsex)
+```
+

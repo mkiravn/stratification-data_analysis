@@ -11,7 +11,7 @@ rule all:
 rule UKBB_begen_to_plink2:
     input:
         bgen="/gpfs/data/pierce-lab/uk-biobank-genotypes/ukb_imp_chr{chr}_v3.bgen",
-        sample="/gpfs/data/berg-lab/data/ukbb/ukb27386_imp_v3_s487324.sample", ## Need to fix sample file 
+        sample="/gpfs/data/berg-lab/data/ukbb/ukb27386_imp_v3_s487324.sample", ## Need to fix sample file
 	pheno_ID="{root}/data/phenotypes/StandingHeight_50_IDs.txt"
     output:
         psam="{root}/data/ukbb/plink2-files/ukb_imp_chr{chr}_v3.psam",
@@ -32,7 +32,7 @@ rule UKBB_begen_to_plink2:
 	--set-all-var-ids @:# \
 	--threads 8 \
 	--memory 38000 \
-	--out {params.prefix} 
+	--out {params.prefix}
 	"""
 
 rule UKBB_freq:
@@ -137,44 +137,24 @@ rule HGDP_recode:
         --out {params.prefix_out}
         """
 
+## Make latitdue test vector
 
-
-
-
-
-
-## Data processing for EUR analysis 
-
-# Get separate list of mainland IDs and test sample IDs (FINs for now)
-rule subset_1KG_IDs_EUR:
+rule make_Tvec_latitude:
     input:
-        samples="{root}/1000G_Genotypes/data/igsr_samples.tsv"
+        psam="{root}/data/hgdp/plink2-files/hgdp_wgs.20190516.full.chr{chr}.psam",
+        populations="{root}/data/hgdp/igsr_populations.tsv"
+        samples="{root}/data/hgdp/igsr_samples.tsv"
     output:
-        target="{root}/1000G_Genotypes/FIN_IDs.txt",
-	mainland="{root}/1000G_Genotypes/Mainland_IDs.txt"
+        "{root}/data/ukbb-hgdp/calculate_Tm/latitude/Tvec.txt"
     shell:
         """
-	awk '$4 == "FIN"' {input.samples} | cut -f 1 | awk '{{print 0,$0}}' > {output.target}
-	awk '$4 == "CEU" || $4 == "GBR" || $4 == "IBS" || $4 == "TSI"' {input.samples} | cut -f 1 | awk '{{print 0,$0}}' > {output.mainland}
-	"""
+        Rscript code/calculate_Tm/make_tvec_latitude.R {input.psam} {input.populations} {input.sample} {output}
+        """
 
-# Get a list of SNPs with  
-rule list_TP_SNPIDs:
-    input:
-        fam= "{root}/1000G_Genotypes/data/ALL.phase3_shapeit2_mvncall_integrated_v5a.20130502.genotypes.EUR.bim",
-	bim="{root}/1000G_Genotypes/data/ALL.phase3_shapeit2_mvncall_integrated_v5a.20130502.genotypes.EUR.bim",
-	bed="{root}/1000G_Genotypes/data/ALL.phase3_shapeit2_mvncall_integrated_v5a.20130502.genotypes.EUR.bed"
-    output:
-        SNP_IDs="{root}/1000G_Genotypes/TestPanel_SNPIDs.txt",
-        fam= "{root}/1000G_Genotypes/data/ALL.phase3_shapeit2_mvncall_integrated_v5a.20130502.genotypes.EUR_maf0.05.fam",
-        bim="{root}/1000G_Genotypes/data/ALL.phase3_shapeit2_mvncall_integrated_v5a.20130502.genotypes.EUR_maf0.05.bim",
-        bed="{root}/1000G_Genotypes/data/ALL.phase3_shapeit2_mvncall_integrated_v5a.20130502.genotypes.EUR_maf0.05.bed"	
-    params:
-        prefix = "/scratch/jgblanc/stratification-data_analysis/1000G_Genotypes/data/ALL.phase3_shapeit2_mvncall_integrated_v5a.20130502.genotypes.EUR"
-    shell:
-        """ 
-	plink --bfile {params.prefix} --maf 0.05 --make-bed --out {params.prefix}_maf0.05
-        cut -f2 {params.prefix}_maf0.05.bim > {output.SNP_IDs}
-        """        
+
+
+
+
+
 
 
