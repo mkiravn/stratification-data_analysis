@@ -158,11 +158,12 @@ rule project_Tvec:
         Tvec="{root}/data/ukbb-hgdp/calculate_Tm/Tvec_cordinates.txt",
         tp_genos="{root}/data/hgdp/plink2-files/hgdp_wgs.20190516.full.chr{chr}.pgen",
         gp_genos="{root}/data/ukbb/plink2-files/ukb_imp_chr{chr}_v3.pgen"
+        overlap_snps="{root}/data/ukbb-hgdp/variants/snps_chr{chr}.txt"
     output:
         "{root}/data/ukbb-hgdp/calculate_Tm/Tm_{chr}.txt"
     shell:
         """
-        Rscript code/calculate_Tm/project_Tvec_chr.R {wildcards.root}/data/hgdp/plink2-files/hgdp_wgs.20190516.full.chr{wildcards.chr} {wildcards.root}/data/ukbb/plink2-files/ukb_imp_chr{wildcards.chr}_v3 {input.Tvec} {wildcards.root}/data/ukbb-hgdp/calculate_Tm/
+        Rscript code/calculate_Tm/project_Tvec_chr.R {wildcards.root}/data/hgdp/plink2-files/hgdp_wgs.20190516.full.chr{wildcards.chr} {wildcards.root}/data/ukbb/plink2-files/ukb_imp_chr{wildcards.chr}_v3 {input.Tvec} {wildcards.root}/data/ukbb-hgdp/calculate_Tm/ {input.overlap_snps}
         """
 
 
