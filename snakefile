@@ -4,7 +4,7 @@ ROOT = ["/gpfs/data/berg-lab/jgblanc/stratification-data_analysis"]
 
 rule all:
     input:
-        expand("{root}/data/ukbb-hgdp/calculate_Tm/Tvec_cordinates.txt", root=ROOT,  chr=CHR)
+        expand("{root}/data/ukbb-hgdp/calculate_Tm/Tm_{chr}.txt", root=ROOT,  chr=CHR)
 
 ## UKBB Genotype data processing
 
@@ -16,7 +16,7 @@ rule UKBB_begen_to_plink2:
     output:
         psam="{root}/data/ukbb/plink2-files/ukb_imp_chr{chr}_v3.psam",
 	pvar="{root}/data/ukbb/plink2-files/ukb_imp_chr{chr}_v3.pvar",
-	ppgen="{root}/data/ukbb/plink2-files/ukb_imp_chr{chr}_v3.pgen"
+	pgen="{root}/data/ukbb/plink2-files/ukb_imp_chr{chr}_v3.pgen"
     params:
         prefix="{root}/data/ukbb/plink2-files/ukb_imp_chr{chr}_v3"
     shell:
@@ -39,12 +39,12 @@ rule UKBB_freq:
     input:
         psam="{root}/data/ukbb/plink2-files/ukb_imp_chr{chr}_v3.psam",
         pvar="{root}/data/ukbb/plink2-files/ukb_imp_chr{chr}_v3.pvar",
-        ppgen="{root}/data/ukbb/plink2-files/ukb_imp_chr{chr}_v3.pgen"
+        pgen="{root}/data/ukbb/plink2-files/ukb_imp_chr{chr}_v3.pgen"
     output:
         freq="{root}/data/ukbb/variant_freq/ukb_imp_chr{chr}_v3.afreq"
     params:
         prefix_out="{root}/data/ukbb/variant_freq/ukb_imp_chr{chr}_v3",
-	prefix_in="{root}/data/ukbb/plink2-files/ukb_imp_chr{chr}_v3"
+	      prefix_in="{root}/data/ukbb/plink2-files/ukb_imp_chr{chr}_v3"
     shell:
         """
         plink2 --pfile {params.prefix_in} --freq \
@@ -139,7 +139,7 @@ rule HGDP_recode:
 
 ## Make latitdue test vector
 
-rule make_Tvec_latitude:
+rule make_Tvec_cordinates:
     input:
         psam="{root}/data/hgdp/plink2-files/hgdp_wgs.20190516.full.chr22.psam",
         populations="{root}/data/hgdp/hgdp_wgs.20190516.metadata.txt"
@@ -150,6 +150,20 @@ rule make_Tvec_latitude:
         Rscript code/calculate_Tm/make_Tvec_hgdp_cordinates.R {input.psam} {input.populations} {output}
         """
 
+## Compute TGWAS
+
+# Each chromosome individually
+rule project_Tvec:
+    input:
+        Tvec="{root}/data/ukbb-hgdp/calculate_Tm/Tvec_cordinates.txt",
+        tp_genos="{root}/data/hgdp/plink2-files/hgdp_wgs.20190516.full.chr{chr}.pgen",
+        gp_genos="{root}/data/ukbb/plink2-files/ukb_imp_chr{chr}_v3.pgen"
+    output:
+        "{root}/data/ukbb-hgdp/calculate_Tm/Tm_{chr}.txt"
+    shell:
+        """
+        Rscript code/calculate_Tm/project_Tvec_chr.R {wildcards.root}/data/hgdp/plink2-files/hgdp_wgs.20190516.full.chr{wildcards.chr} {wildcards.root}/data/hgdp/plink2-files/hgdp_wgs.20190516.full.chr{wildcards.chr}.pgen {input.Tvec} {output}
+        """
 
 
 

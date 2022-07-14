@@ -37,3 +37,29 @@ df <- inner_join(sample_file, gsex, by=c("ID_1" = "eid"))
 df2 <- inner_join(height, gsex)
 ```
 
+```{r}
+## Compute TGWAS
+
+X1 <- matrix(rbinom(200*100, 2, 0.5), nrow = 100, ncol = 200)
+X1 <- scale(X1, scale = F)
+X2 <- matrix(rbinom(200*100, 2, 0.5), nrow = 100, ncol = 200)
+X2 <- scale(X2, scale = F)
+
+G1 <- matrix(rbinom(200*150, 2, 0.5), nrow = 150, ncol = 200)
+G1 <- scale(G1, scale = F)
+G2 <- matrix(rbinom(200*150, 2, 0.5), nrow = 150, ncol = 200)
+G2 <- scale(G2, scale = F)
+
+Tvec <- 10 * runif(100)
+Tvec <- Tvec - mean(Tvec) 
+
+Tm1 <- G1 %*% t(X1) %*% Tvec 
+Tm2 <- G2 %*% t(X2) %*% Tvec
+
+X <- cbind(X1, X2)
+G <- cbind(G1, G2)
+
+Tm <- G %*% t(X) %*% Tvec  
+Tm_chr <- Tm1 + Tm2
+```
+
