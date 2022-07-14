@@ -162,7 +162,7 @@ rule project_Tvec:
         "{root}/data/ukbb-hgdp/calculate_Tm/Tm_{chr}.txt"
     shell:
         """
-        Rscript code/calculate_Tm/project_Tvec_chr.R {wildcards.root}/data/hgdp/plink2-files/hgdp_wgs.20190516.full.chr{wildcards.chr} {wildcards.root}/data/hgdp/plink2-files/hgdp_wgs.20190516.full.chr{wildcards.chr}.pgen {input.Tvec} {output}
+        Rscript code/calculate_Tm/project_Tvec_chr.R {wildcards.root}/data/hgdp/plink2-files/hgdp_wgs.20190516.full.chr{wildcards.chr} {wildcards.root}/data/ukbb/plink2-files/ukb_imp_chr{wildcards.chr}_v3 {input.Tvec} {wildcards.root}/data/ukbb-hgdp/calculate_Tm/
         """
 
 

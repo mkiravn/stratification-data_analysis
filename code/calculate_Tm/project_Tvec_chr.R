@@ -10,10 +10,10 @@ suppressWarnings(suppressMessages({
   library(dplyr)
 }))
 
-tp_prefix = args[1]
-gp_prefix = args[2]
-Tvec_file = args[3]
-out_path = args[4]
+test_prefix = args[1]
+gwas_prefix = args[2]
+tvec_file = args[3]
+out_prefix = args[4]
 
 ####################
 ## Functions #######
@@ -24,13 +24,13 @@ compute_b <- function(path_to_test, path_to_gwas, path_to_testvec, test_type, ou
 
   # Compute t(X)T
   outfile_XT <- paste0(outpath, "xt_temp")
-  cmd_XT <- paste("sh code/Calculate_Tm/compute_XT.sh", path_to_test, path_to_testvec, test_type, outfile_XT, sep = " ")
+  cmd_XT <- paste("sh code/calculate_Tm/compute_XT.sh", path_to_test, path_to_testvec, test_type, outfile_XT, sep = " ")
   system(cmd_XT)
 
   # Adjust Betas to account for variance in x
 
   # Read in betas and genotype counts
-  beta_plink <- fread(paste0(outpath, "xt_temp.Tvec.glm.linear"))
+  beta_plink <- fread(paste0(outpath, "xt_temp." , test_type ,".glm.linear"))
   count_plink <- fread(paste0(outpath, "xt_temp.gcount"))
 
   # Calculate length of mean centered genotypes from counts
@@ -45,11 +45,11 @@ compute_b <- function(path_to_test, path_to_gwas, path_to_testvec, test_type, ou
   #  Re-write .linear file with correct betas
   beta_plink$BETA <- betas_plink_norm
   beta_reformat <- beta_plink %>% dplyr::select(ID, A1, BETA)
-  fwrite(beta_reformat, paste0(outpath, "xt_temp.Tvec.glm.linear"), sep = "\t")
+  fwrite(beta_reformat, paste0(outpath, "xt_temp.", test_type, ".glm.linear"), sep = "\t")
 
   # Compute b
   outfile_b <- paste0(outpath, "b")
-  cmd_b <- paste("sh code/Calculate_Tm/GWAS_score.sh", path_to_gwas, paste0(outpath, "xt_temp.Tvec.glm.linear"), outfile_b, sep = " ")
+  cmd_b <- paste("sh code/calculate_Tm/GWAS_score.sh", path_to_gwas, paste0(outpath, "xt_temp.", test_type, ".glm.linear"), outfile_b, sep = " ")
   system(cmd_b)
 
   # Read in and return b
@@ -66,9 +66,11 @@ compute_b <- function(path_to_test, path_to_gwas, path_to_testvec, test_type, ou
 
 # Gather parameters
 gwasID <- fread(paste0(gwas_prefix, ".psam"))
+head(gwasID)
 colnames(gwasID) <- c("FID", "IID",  "Sex")
 m <- nrow(gwasID)
 testID <- fread(paste0(test_prefix, ".psam"))
+head(testID)
 colnames(testID) <- c("IID",  "Sex")
 n <- nrow(testID)
 
