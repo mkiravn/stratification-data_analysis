@@ -3,7 +3,7 @@
 
 args=commandArgs(TRUE)
 
-if(length(args)<4){stop("Rscript make_Tvec_hgdp_cordinates.R <fam file> <populations> <samples> <outfile> ")}
+if(length(args)<3){stop("Rscript make_Tvec_hgdp_cordinates.R <fam file> <populations> <outfile> ")}
 
 suppressWarnings(suppressMessages({
   library(data.table)
@@ -12,5 +12,25 @@ suppressWarnings(suppressMessages({
 
 fam_file = args[1]
 pop_file = args[2]
-sample_file = args[3]
-out_file = args[4]
+out_file = args[3]
+
+# Read in files
+fam <- fread(fam_file)
+pops <- fread(pop_file)
+
+# Merge sample and fam files
+df <- inner_join(fam, pops, by = c("#IID"= "sample"))
+df <- df %>% select("#IID", "SEX", "latitude", "longitude")
+
+# Output file
+fwrite(df,out_file, row.names = F, col.names = T, quote = F, sep = "\t")
+
+
+
+
+
+
+
+
+
+

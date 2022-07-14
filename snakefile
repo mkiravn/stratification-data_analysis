@@ -141,14 +141,13 @@ rule HGDP_recode:
 
 rule make_Tvec_latitude:
     input:
-        psam="{root}/data/hgdp/plink2-files/hgdp_wgs.20190516.full.chr{chr}.psam",
-        populations="{root}/data/hgdp/igsr_populations.tsv"
-        samples="{root}/data/hgdp/igsr_samples.tsv"
+        psam="{root}/data/hgdp/plink2-files/hgdp_wgs.20190516.full.chr22.psam",
+        populations="{root}/data/hgdp/hgdp_wgs.20190516.metadata.txt"
     output:
-        "{root}/data/ukbb-hgdp/calculate_Tm/latitude/Tvec.txt"
+        "{root}/data/ukbb-hgdp/calculate_Tm/Tvec_cordinates.txt"
     shell:
         """
-        Rscript code/calculate_Tm/make_tvec_latitude.R {input.psam} {input.populations} {input.sample} {output}
+        Rscript code/calculate_Tm/make_tvec_cordinates.R {input.psam} {input.populations} {input.sample} {output}
         """
 
 
