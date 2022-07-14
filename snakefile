@@ -4,7 +4,7 @@ ROOT = ["/gpfs/data/berg-lab/jgblanc/stratification-data_analysis"]
 
 rule all:
     input:
-        expand("{root}/data/ukbb-hgdp/hgdp/plink2-files/hgdp_wgs.20190516.full.chr{chr}.psam", root=ROOT,  chr=CHR)
+        expand("{root}/data/ukbb-hgdp/calculate_Tm/Tvec_cordinates.txt", root=ROOT,  chr=CHR)
 
 ## UKBB Genotype data processing
 
@@ -147,7 +147,7 @@ rule make_Tvec_latitude:
         "{root}/data/ukbb-hgdp/calculate_Tm/Tvec_cordinates.txt"
     shell:
         """
-        Rscript code/calculate_Tm/make_tvec_cordinates.R {input.psam} {input.populations} {input.sample} {output}
+        Rscript code/calculate_Tm/make_Tvec_hgdp_cordinates.R {input.psam} {input.populations} {output}
         """
 
 
