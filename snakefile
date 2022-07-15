@@ -6,7 +6,7 @@ ROOT = ["/gpfs/data/berg-lab/jgblanc/stratification-data_analysis"]
 
 rule all:
     input:
-        expand("{root}/data/ukbb-hgdp/calculate_Tm/TGWAS.txt", root=ROOT,  chr=CHR)
+        expand("{root}/data/ukbb-hgdp/data/run_gwas/covars.txt", root=ROOT,  chr=CHR)
 
 ## UKBB Genotype data processing
 
@@ -191,12 +191,30 @@ rule format_covars:
         sex = "/gpfs/data/berg-lab/data/ukbb/phenotypes/genetic_sex_22001.txt",
         array = "/gpfs/data/berg-lab/data/ukbb/phenotypes/genotype_measurement_batch_22000.txt"
     output:
-        "{root}/data/ukbb-hgdp/run_gwas/covars.txt"
+        "{root}/data/ukbb-hgdp/data/run_gwas/covars.txt"
     shell:
         """
         Rscript code/run_gwas/format_covars.R {input.fam} {input.TGWAS} {input.aar} {input.sex} {input.array} {output}
         """
 
+rule run_gwas_uncorrected:
+    input:
+        genos = "{root}/data/ukbb/plink2-files/ukb_imp_chr{chr}_v3.pgen",
+        covar = "{root}/data/ukbb-hgdp/run_gwas/covars.txt",
+        pheno = "{root}/data/phenotypes/StandingHeight_50.txt"
+    output:
+        "{root}/data/ukbb-hgdp/data/run_gwas/effect_sizes/ukb_imp_chr{chr}_v3.Height.glm.linear"
+    shell:
+        """
+        plink2 \
+        --pfile {wildcards.root}/data/ukbb/plink2-files/ukb_imp_chr{wildcards.chr}_v3 \
+        --glm hide-covar \
+        --covar {input.covar} \
+        --covar-col-nums 3-5 \
+        --pheno {input.pheno} \
+        --pheno-name Height \
+        --out {wildcards.root}/data/ukbb-hgdp/data/run_gwas/effect_sizes/ukb_imp_chr{wildcards.chr}_v3
+        """
 
 
 
