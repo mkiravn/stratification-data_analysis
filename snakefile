@@ -6,7 +6,7 @@ ROOT = ["/gpfs/data/berg-lab/jgblanc/stratification-data_analysis"]
 
 rule all:
     input:
-        expand("{root}/data/ukbb-hgdp/calculate_Tm/Tm_{chr}.txt", root=ROOT,  chr=CHR)
+        expand("{root}/data/ukbb-hgdp/calculate_Tm/TGWAS.txt", root=ROOT,  chr=CHR)
 
 ## UKBB Genotype data processing
 
@@ -171,14 +171,14 @@ rule project_Tvec_chr:
 # Add together individal chromosomes
 rule concat_chr_Tm:
     input:
-        expand("{root}/data/ukbb-hgdp/calculate_Tm/Tm_{chr}.txt", chr = CHR)
+        expand("{root}/data/ukbb-hgdp/calculate_Tm/Tm_{chr}.txt", chr = CHR, root=ROOT)
     output:
         "{root}/data/ukbb-hgdp/calculate_Tm/TGWAS.txt"
     params:
         chromosomes = CHR
     shell:
         """
-        Rscript code/calculate_Tm/concat_Tm.R {wildcards.root}/data/ukbb-hgdp/calculate_Tm/Tm {params.chromosomes} {output}
+        Rscript code/calculate_Tm/concat_Tm.R {wildcards.root}/data/ukbb-hgdp/calculate_Tm/Tm {output} {params.chromosomes}
         """
 
 
