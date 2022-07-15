@@ -181,7 +181,21 @@ rule concat_chr_Tm:
         Rscript code/calculate_Tm/concat_Tm.R {wildcards.root}/data/ukbb-hgdp/calculate_Tm/Tm {output} {params.chromosomes}
         """
 
+## Run GWAS
 
+rule format_covars:
+    input:
+        fam = "{root}/data/ukbb/plink2-files/ukb_imp_chr{chr}_v3.psam",
+        TGWAS = "{root}/data/ukbb-hgdp/calculate_Tm/TGWAS.txt",
+        aar = "/gpfs/data/berg-lab/data/ukbb/phenotypes/age_at_recruitment_21022.txt",
+        sex = "/gpfs/data/berg-lab/data/ukbb/phenotypes/genetic_sex_22001.txt",
+        array = "/gpfs/data/berg-lab/data/ukbb/phenotypes/genotype_measurement_batch_22000.txt"
+    output:
+        "{root}/data/ukbb-hgdp/run_gwas/covars.txt"
+    shell:
+        """
+        Rscript code/run_gwas/format_covars.R {input.fam} {input.TGWAS} {input.aar} {input.sex} {input.array} {output}
+        """
 
 
 
