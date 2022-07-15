@@ -22,6 +22,10 @@ pops <- fread(pop_file)
 df <- inner_join(fam, pops, by = c("#IID"= "sample"))
 df <- df %>% select("#IID", "SEX", "latitude", "longitude")
 
+# Mean center coordinates
+df$latitude <- df$latitude - mean(df$latitude)
+df$longitude <- df$longitude - mean(df$longitude)
+
 # Output file
 fwrite(df,out_file, row.names = F, col.names = T, quote = F, sep = "\t")
 

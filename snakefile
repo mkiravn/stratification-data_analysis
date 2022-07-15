@@ -4,7 +4,7 @@ ROOT = ["/gpfs/data/berg-lab/jgblanc/stratification-data_analysis"]
 
 rule all:
     input:
-        expand("{root}/data/ukbb-hgdp/calculate_Tm/Tm_{chr}.txt", root=ROOT,  chr=CHR)
+        expand("{root}/data/ukbb-hgdp/variants/snps_chr{chr}.txt", root=ROOT,  chr=CHR)
 
 ## UKBB Genotype data processing
 
