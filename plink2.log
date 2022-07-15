@@ -1,0 +1,23 @@
+PLINK v2.00a3LM AVX2 Intel (1 Jul 2021)
+Options in effect:
+  --glm omit-ref allow-no-covars
+  --pfile data/hgdp/plink2-files/hgdp_wgs.20190516.full.chr22
+  --pheno /gpfs/data/berg-lab/jgblanc/stratification-data_analysis/data/ukbb-hgdp/calculate_Tm/Tvec_cordinates.txt
+
+Hostname: cri16in001
+Working directory: /gpfs/data/berg-lab/jgblanc/stratification-data_analysis
+Start time: Fri Jul 15 11:51:38 2022
+
+Random number seed: 1657903898
+128952 MiB RAM detected; reserving 64476 MiB for main workspace.
+Allocated 20400 MiB successfully, after larger attempt(s) failed.
+Using up to 28 threads (change this with --threads).
+929 samples (0 females, 0 males, 929 ambiguous; 929 founders) loaded from
+data/hgdp/plink2-files/hgdp_wgs.20190516.full.chr22.psam.
+180451 variants loaded from
+data/hgdp/plink2-files/hgdp_wgs.20190516.full.chr22.pvar.
+Error: Line 2 of
+/gpfs/data/berg-lab/jgblanc/stratification-data_analysis/data/ukbb-hgdp/calculate_Tm/Tvec_cordinates.txt
+has fewer tokens than expected.
+
+End time: Fri Jul 15 11:51:38 2022
