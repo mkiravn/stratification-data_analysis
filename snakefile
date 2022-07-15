@@ -1,5 +1,5 @@
 # Snakefile to run UKBB  data analysis
-CHR =["21"]
+CHR =["21", "22"]
 #for i in range(1, 23):
 #  CHR.append(str(i))
 ROOT = ["/gpfs/data/berg-lab/jgblanc/stratification-data_analysis"]
@@ -155,7 +155,7 @@ rule make_Tvec_cordinates:
 ## Compute TGWAS
 
 # Each chromosome individually
-rule project_Tvec:
+rule project_Tvec_chr:
     input:
         Tvec="{root}/data/ukbb-hgdp/calculate_Tm/Tvec_cordinates.txt",
         tp_genos="{root}/data/hgdp/plink2-files/hgdp_wgs.20190516.full.chr{chr}.pgen",
@@ -168,6 +168,18 @@ rule project_Tvec:
         Rscript code/calculate_Tm/project_Tvec_chr.R {wildcards.root}/data/hgdp/plink2-files/hgdp_wgs.20190516.full.chr{wildcards.chr} {wildcards.root}/data/ukbb/plink2-files/ukb_imp_chr{wildcards.chr}_v3 {wildcards.root}/data/ukbb-hgdp/calculate_Tm/Tvec {wildcards.root}/data/ukbb-hgdp/calculate_Tm/ {input.overlap_snps} {output}
         """
 
+# Add together individal chromosomes
+rule concat_chr_Tm:
+    input:
+        expand("{root}/data/ukbb-hgdp/calculate_Tm/Tm_{chr}.txt", chr = CHR)
+    output:
+        "{root}/data/ukbb-hgdp/calculate_Tm/TGWAS.txt"
+    params:
+        chromosomes = CHR
+    shell:
+        """
+        Rscript code/calculate_Tm/concat_Tm.R {wildcards.root}/data/ukbb-hgdp/calculate_Tm/Tm {params.chromosomes} {output}
+        """
 
 
 
