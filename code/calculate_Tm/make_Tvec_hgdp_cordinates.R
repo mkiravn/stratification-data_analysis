@@ -20,7 +20,7 @@ pops <- fread(pop_file)
 
 # Merge sample and fam files
 df <- inner_join(fam, pops, by = c("#IID"= "sample"))
-df <- df %>% select("#IID", "SEX", "latitude", "longitude")
+df <- df %>% select("#IID", "latitude", "longitude")
 
 # Mean center coordinates
 df$latitude <- df$latitude - mean(df$latitude)
@@ -30,10 +30,10 @@ df$longitude <- df$longitude - mean(df$longitude)
 fwrite(df,paste0(out_file, "_cordinates.txt"), row.names = F, col.names = T, quote = F, sep = "\t")
 
 # Output separate phenotype file for lat and long
-lat <- df %>% select("#IID", "SEX", "latitude")
+lat <- df %>% select("#IID", "latitude")
 fwrite(lat,paste0(out_file, "_latitude.txt"), row.names = F, col.names = T, quote = F, sep = "\t")
 
-long <- df %>% select("#IID", "SEX", "longitude")
+long <- df %>% select("#IID", "longitude")
 fwrite(long,paste0(out_file, "_longitude.txt"), row.names = F, col.names = T, quote = F, sep = "\t")
 
 

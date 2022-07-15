@@ -7,7 +7,7 @@
 ########################
  
 ### Set the name of the job, where jobname is a unique name for your job
-#PBS -N plink_test
+#PBS -N test_vec
  
 ### Select the shell you would like the script to execute within
 #PBS -S /bin/bash
@@ -24,8 +24,8 @@
 #PBS -l mem=12gb
  
 ### Set the destination for your program's output.
-#PBS -o $HOME/stratification-data_analysis/logs/plink_test.out
-#PBS -e $HOME/stratification-data_analysis/logs/plink_test.err
+#PBS -o $HOME/stratification-data_analysis/logs/test_vec.out
+#PBS -e $HOME/stratification-data_analysis/logs/test_vec.err
  
 ### Change working directory to the one it was submitted from
 cd $PBS_O_WORKDIR
@@ -43,4 +43,4 @@ module load openssl/1.1.1d
 module load python/3.7.6
  
 # Execute the program
-snakemake -j1
+snakemake --cores all

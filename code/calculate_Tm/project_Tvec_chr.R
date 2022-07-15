@@ -15,6 +15,7 @@ gwas_prefix = args[2]
 tvec_file = args[3]
 out_prefix = args[4]
 overlap_snps = args[5]
+outfile = args[6]
 
 ####################
 ## Functions #######
@@ -78,15 +79,15 @@ n <- nrow(testID)
 
 # Compute b for latitude
 b_lat = compute_b(path_to_test = test_prefix, path_to_gwas = gwas_prefix, path_to_testvec = tvec_file, test_type = "latitude", outpath = out_prefix)
-b_lat = as.data.frame(scale(b_lat))
+b_lat = as.data.frame(b_lat)
 colnames(b_lat) <- "latitude"
 
 # Compute b for latitude
 b_long = compute_b(path_to_test = test_prefix, path_to_gwas = gwas_prefix, path_to_testvec = tvec_file, test_type = "longitude", outpath = out_prefix)
-b_long = as.data.frame(scale(b_long))
+b_long = as.data.frame(b_long)
 colnames(b_long) <- "longitude"
 
 b <- cbind(b_lat, b_long)
 
 
-fwrite(b, paste0(out_prefix, "Tm.txt"), row.names = F, col.names = T, quote = F, sep = "\t")
+fwrite(b, outfile, row.names = F, col.names = T, quote = F, sep = "\t")

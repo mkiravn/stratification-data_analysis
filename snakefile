@@ -1,5 +1,7 @@
 # Snakefile to run UKBB  data analysis
-CHR =["22"]
+CHR =["21"]
+#for i in range(1, 23):
+#  CHR.append(str(i))
 ROOT = ["/gpfs/data/berg-lab/jgblanc/stratification-data_analysis"]
 
 rule all:
@@ -163,7 +165,7 @@ rule project_Tvec:
         "{root}/data/ukbb-hgdp/calculate_Tm/Tm_{chr}.txt"
     shell:
         """
-        Rscript code/calculate_Tm/project_Tvec_chr.R {wildcards.root}/data/hgdp/plink2-files/hgdp_wgs.20190516.full.chr{wildcards.chr} {wildcards.root}/data/ukbb/plink2-files/ukb_imp_chr{wildcards.chr}_v3 {wildcards.root}/data/ukbb-hgdp/calculate_Tm/Tvec {wildcards.root}/data/ukbb-hgdp/calculate_Tm/ {input.overlap_snps}
+        Rscript code/calculate_Tm/project_Tvec_chr.R {wildcards.root}/data/hgdp/plink2-files/hgdp_wgs.20190516.full.chr{wildcards.chr} {wildcards.root}/data/ukbb/plink2-files/ukb_imp_chr{wildcards.chr}_v3 {wildcards.root}/data/ukbb-hgdp/calculate_Tm/Tvec {wildcards.root}/data/ukbb-hgdp/calculate_Tm/ {input.overlap_snps} {output}
         """
 
 
