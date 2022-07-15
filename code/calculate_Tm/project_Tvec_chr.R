@@ -25,7 +25,8 @@ compute_b <- function(path_to_test, path_to_gwas, path_to_testvec, test_type, ou
 
   # Compute t(X)T
   outfile_XT <- paste0(outpath, "xt_temp")
-  cmd_XT <- paste("sh code/calculate_Tm/compute_XT.sh", path_to_test, path_to_testvec, test_type, outfile_XT, overlap_snps, sep = " ")
+  pheno_file <- paste0(path_to_testvec, "_", test_type, ".txt")
+  cmd_XT <- paste("sh code/calculate_Tm/compute_XT.sh", path_to_test, pheno_file, test_type, outfile_XT, overlap_snps, sep = " ")
   system(cmd_XT)
 
   # Adjust Betas to account for variance in x

@@ -147,7 +147,7 @@ rule make_Tvec_cordinates:
         "{root}/data/ukbb-hgdp/calculate_Tm/Tvec_cordinates.txt"
     shell:
         """
-        Rscript code/calculate_Tm/make_Tvec_hgdp_cordinates.R {input.psam} {input.populations} {output}
+        Rscript code/calculate_Tm/make_Tvec_hgdp_cordinates.R {input.psam} {input.populations} {wildcards.root}/data/ukbb-hgdp/calculate_Tm/Tvec
         """
 
 ## Compute TGWAS
@@ -163,7 +163,7 @@ rule project_Tvec:
         "{root}/data/ukbb-hgdp/calculate_Tm/Tm_{chr}.txt"
     shell:
         """
-        Rscript code/calculate_Tm/project_Tvec_chr.R {wildcards.root}/data/hgdp/plink2-files/hgdp_wgs.20190516.full.chr{wildcards.chr} {wildcards.root}/data/ukbb/plink2-files/ukb_imp_chr{wildcards.chr}_v3 {input.Tvec} {wildcards.root}/data/ukbb-hgdp/calculate_Tm/ {input.overlap_snps}
+        Rscript code/calculate_Tm/project_Tvec_chr.R {wildcards.root}/data/hgdp/plink2-files/hgdp_wgs.20190516.full.chr{wildcards.chr} {wildcards.root}/data/ukbb/plink2-files/ukb_imp_chr{wildcards.chr}_v3 {wildcards.root}/data/ukbb-hgdp/calculate_Tm/Tvec {wildcards.root}/data/ukbb-hgdp/calculate_Tm/ {input.overlap_snps}
         """
 
 
