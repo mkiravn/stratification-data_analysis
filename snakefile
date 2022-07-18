@@ -274,5 +274,5 @@ rule ascertain_snps:
         snps_long = "{root}/data/ukbb-hgdp/run_gwas/ascertained/ukb_imp_chr{chr}_v3.Height-Long.betas"
     shell:
         """
-        Rscript code/run_gwas/pick_snps.R {input.block} {input.betas_uncorrected} {input.betas_lat} {input.betas_long} {output.snps_uncorrected} {output.snps_lat} {output.snps_lat} {output.snps_long}
+        Rscript code/run_gwas/pick_snps.R {input.block} {input.betas_uncorrected} {input.betas_lat} {input.betas_long} {output.snps_uncorrected} {output.snps_lat} {output.snps_long}
         """

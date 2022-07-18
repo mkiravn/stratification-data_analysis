@@ -52,19 +52,21 @@ df_long <- betas_long %>%
 
 # Pick the minimum p-value per block
 u <- df_u %>%
-  group_by(block) %>%
-  slice_min(P, with_ties = F)
+  group_by(block) %>% arrange(P) %>% slice(n=1)
+print.data.frame(head(u))
 lat <- df_lat %>%
-  group_by(block) %>%
-  slice_min(P, with_ties = F)
+  group_by(block) %>% arrange(P) %>% slice(n=1)
+print.data.frame(head(lat))
 long <- df_long %>%
-  group_by(block) %>%
-  slice_min(P, with_ties = F)
+  group_by(block) %>% arrange(P) %>% slice(n=1)
+print.data.frame(head(long))
 
 # Write to output files
 fwrite(u,out_u, row.names = F, col.names = T, quote = F, sep = "\t")
+print("wrote uncorrected")
 fwrite(lat,out_lat, row.names = F, col.names = T, quote = F, sep = "\t")
+print("wrote latidue")
 fwrite(long,out_long, row.names = F, col.names = T, quote = F, sep = "\t")
-
+print("wrote longitude")
 
 
