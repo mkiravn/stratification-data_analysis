@@ -8,6 +8,7 @@ if(length(args)<5){stop("Rscript conccat_Tm.R <prefix to Tm chromosomes> <chromo
 suppressWarnings(suppressMessages({
   library(data.table)
   library(dplyr)
+  library(tidyr)
 }))
 
 fam = fread(args[1])
@@ -39,6 +40,9 @@ m3 <- inner_join(m2, array, by = c("IID" = "IID")) %>% select("#FID", "IID", "Ag
 # Merge TGWAS
 out <- cbind(m3, TGWAS$latitude, TGWAS$longitude)
 colnames(out) <- c("#FID", "IID", "Age", "Sex", "Array", "latitude", "longitude")
+
+# Drop missing values
+out <- drop_na(out)
 
 # Write to output file
 fwrite(out, outfile, row.names = F, col.names = T, quote = F, sep = "\t")

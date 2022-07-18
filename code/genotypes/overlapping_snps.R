@@ -18,9 +18,9 @@ outfile = args[3]
 ukbb <- fread(ukbb_file)
 tp <- fread(tp_file)
 
-# Subset to SNPs > 1% MAF
-ukbb <- subset(ukbb, ukbb$ALT_FREQS > 0.01 & ukbb$ALT_FREQS < 0.99)
-tp <- subset(tp, tp$ALT_FREQS > 0.01 & tp$ALT_FREQS < 0.99)
+# Subset to SNPs > 5% MAF
+ukbb <- subset(ukbb, ukbb$ALT_FREQS > 0.05 & ukbb$ALT_FREQS < 0.95)
+tp <- subset(tp, tp$ALT_FREQS > 0.05 & tp$ALT_FREQS < 0.95)
 
 # Subset to SNPs with missingness rate < 5%
 tp <- subset(tp, tp$OBS_CT > (0.95 * 2 * 929))
