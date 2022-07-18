@@ -1,4 +1,4 @@
-# Snakefile to run UKBB  data analysis
+# Snakefile to run HGDP (full data) / UKBB  data analysis
 CHR =["21", "22"]
 #for i in range(1, 23):
 #  CHR.append(str(i))
@@ -139,7 +139,7 @@ rule HGDP_recode:
         --out {params.prefix_out}
         """
 
-## Make latitdue test vector
+## Make latitude and longitude test vector
 
 rule make_Tvec_cordinates:
     input:
@@ -202,7 +202,7 @@ rule run_gwas_uncorrected:
         genos = "{root}/data/ukbb/plink2-files/ukb_imp_chr{chr}_v3.pgen",
         covar = "{root}/data/ukbb-hgdp/run_gwas/covars.txt",
         pheno = "{root}/data/phenotypes/StandingHeight_50.txt",
-	snp_list = "{root}/data/ukbb-hgdp/variants/snps_chr{chr}.txt" 
+	snp_list = "{root}/data/ukbb-hgdp/variants/snps_chr{chr}.txt"
     output:
         "{root}/data/ukbb-hgdp/run_gwas/effect_sizes/ukb_imp_chr{chr}_v3.Height.glm.linear"
     shell:
@@ -258,4 +258,21 @@ rule run_gwas_longitude:
         --pheno {input.pheno} \
         --pheno-name Height \
         --out {wildcards.root}/data/ukbb-hgdp/run_gwas/effect_sizes/ukb_imp_chr{wildcards.chr}_v3-Long
+        """
+
+## Ascertain SNPs PGS
+
+rule ascertain_snps:
+    input:
+        betas_uncorrected = "{root}/data/ukbb-hgdp/run_gwas/effect_sizes/ukb_imp_chr{chr}_v3.Height.glm.linear",
+        betas_lat = "{root}/data/ukbb-hgdp/run_gwas/effect_sizes/ukb_imp_chr{chr}_v3-Lat.Height.glm.linear",
+        betas_long= "{root}/data/ukbb-hgdp/run_gwas/effect_sizes/ukb_imp_chr{chr}_v3-Long.Height.glm.linear",
+        block = "{root}/data/LD_blocks/fourier_ls-all_parsed.bed"
+    output:
+        snps_uncorrected = "{root}/data/ukbb-hgdp/run_gwas/ascertained/ukb_imp_chr{chr}_v3.Height.betas",
+        snps_lat = "{root}/data/ukbb-hgdp/run_gwas/ascertained/ukb_imp_chr{chr}_v3.Height-Lat.betas",
+        snps_long = "{root}/data/ukbb-hgdp/run_gwas/ascertained/ukb_imp_chr{chr}_v3.Height-Long.betas"
+    shell:
+        """
+        Rscript code/run_gwas/pick_snps.R {input.block} {input.betas_uncorrected} {input.betas_lat} {input.betas_long} {output.snps_uncorrected} {output.snps_lat} {output.snps_lat} {output.snps_long}
         """
