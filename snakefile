@@ -6,7 +6,7 @@ ROOT = ["/gpfs/data/berg-lab/jgblanc/stratification-data_analysis"]
 
 rule all:
     input:
-        expand("{root}/data/ukbb-hgdp/run_gwas/effect_sizes/ukb_imp_chr{chr}_v3-Long.Height.glm.linear", root=ROOT,  chr=CHR)
+        expand("{root}/data/ukbb-hgdp/run_gwas/ascertained/ukb_imp_chr{chr}_v3.Height.betas", root=ROOT,  chr=CHR)
 
 ## UKBB Genotype data processing
 
@@ -260,7 +260,7 @@ rule run_gwas_longitude:
         --out {wildcards.root}/data/ukbb-hgdp/run_gwas/effect_sizes/ukb_imp_chr{wildcards.chr}_v3-Long
         """
 
-## Ascertain SNPs PGS
+## Ascertain SNPs for PGS
 
 rule ascertain_snps:
     input:

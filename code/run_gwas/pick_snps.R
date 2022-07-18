@@ -24,7 +24,7 @@ ld_blocks = fread(block_file)
 
 
 # Function to assign SNPs to blocl
-assign_SNP_to_block <- function(CHR, BP, block = ld_block) {
+assign_SNP_to_block <- function(CHR, BP, block = ld_blocks) {
 
   # Filter blocks based on snp
   block_chr <- block %>% filter(chr == CHR)
@@ -40,3 +40,31 @@ assign_SNP_to_block <- function(CHR, BP, block = ld_block) {
 betas_u <- fread(u_file)
 betas_lat <- fread(lat_file)
 betas_long <- fread(long_file)
+
+# Asign all SNPs to blocks
+df_u <- betas_u %>%
+  mutate(block = apply(., MARGIN = 1, FUN = function(params)assign_SNP_to_block(as.numeric(params[1]), as.numeric(params[2]))))
+df_lat <- betas_lat %>%
+  mutate(block = apply(., MARGIN = 1, FUN = function(params)assign_SNP_to_block(as.numeric(params[1]), as.numeric(params[2]))))
+df_long <- betas_long %>%
+  mutate(block = apply(., MARGIN = 1, FUN = function(params)assign_SNP_to_block(as.numeric(params[1]), as.numeric(params[2]))))
+
+
+# Pick the minimum p-value per block
+u <- df_u %>%
+  group_by(block) %>%
+  slice_min(P, with_ties = F)
+lat <- df_lat %>%
+  group_by(block) %>%
+  slice_min(P, with_ties = F)
+long <- df_long %>%
+  group_by(block) %>%
+  slice_min(P, with_ties = F)
+
+# Write to output files
+fwrite(u,out_u, row.names = F, col.names = T, quote = F, sep = "\t")
+fwrite(lat,out_lat, row.names = F, col.names = T, quote = F, sep = "\t")
+fwrite(long,out_long, row.names = F, col.names = T, quote = F, sep = "\t")
+
+
+
