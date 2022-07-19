@@ -3,7 +3,7 @@ CHR =["21", "22"]
 #for i in range(1, 23):
 #  CHR.append(str(i))
 ROOT = ["/gpfs/data/berg-lab/jgblanc/stratification-data_analysis"]
-dataset = ["FULL", "EUR"]
+DATASET = ["ALL", "EUR"]
 
 rule all:
     input:
@@ -15,28 +15,28 @@ rule UKBB_begen_to_plink2:
     input:
         bgen="/gpfs/data/pierce-lab/uk-biobank-genotypes/ukb_imp_chr{chr}_v3.bgen",
         sample="/gpfs/data/berg-lab/data/ukbb/ukb27386_imp_v3_s487324.sample", ## Need to fix sample file
-	      pheno_ID="{root}/data/phenotypes/StandingHeight_50_IDs.txt"
+	pheno_ID="{root}/data/phenotypes/StandingHeight_50_IDs.txt"
     output:
         psam="{root}/data/ukbb/plink2-files/ukb_imp_chr{chr}_v3.psam",
-	      pvar="{root}/data/ukbb/plink2-files/ukb_imp_chr{chr}_v3.pvar",
-	      pgen="{root}/data/ukbb/plink2-files/ukb_imp_chr{chr}_v3.pgen"
+	pvar="{root}/data/ukbb/plink2-files/ukb_imp_chr{chr}_v3.pvar",
+	pgen="{root}/data/ukbb/plink2-files/ukb_imp_chr{chr}_v3.pgen"
     params:
         prefix="{root}/data/ukbb/plink2-files/ukb_imp_chr{chr}_v3"
     shell:
         """
-	      plink2 --bgen {input.bgen} ref-first \
-	      --sample {input.sample} \
-	      --keep {input.pheno_ID} \
-	      --maf 0.01 \
-	      --rm-dup exclude-all \
-	      --snps-only \
-	      --max-alleles 2 \
-	      --make-pgen \
-	      --set-all-var-ids @:# \
-	      --threads 8 \
-	      --memory 38000 \
-	      --out {params.prefix}
-	      """
+	plink2 --bgen {input.bgen} ref-first \
+	--sample {input.sample} \
+	--keep {input.pheno_ID} \
+	--maf 0.01 \
+	--rm-dup exclude-all \
+	--snps-only \
+	--max-alleles 2 \
+	--make-pgen \
+	--set-all-var-ids @:# \
+	--threads 8 \
+	--memory 38000 \
+	--out {params.prefix}
+	"""
 
 rule UKBB_freq:
     input:
@@ -331,12 +331,12 @@ rule compute_Qx:
         snps_uncorrected = "{root}/data/ukbb-hgdp/run_gwas/ascertained/ukb_imp_chr{chr}_v3.Height.betas",
         snps_lat = "{root}/data/ukbb-hgdp/run_gwas/ascertained/ukb_imp_chr{chr}_v3.Height-Lat.betas",
         snps_long = "{root}/data/ukbb-hgdp/run_gwas/ascertained/ukb_imp_chr{chr}_v3.Height-Long.betas",
-        Tvec = "{root}/data/ukbb-hgdp/calculate_Tm/Tvec_cordinates.txt"
+        Tvec = "{root}/data/ukbb-hgdp/calculate_Tm/Tvec_cordinates.txt",
         hgdp_genos = "{root}/data/hgdp/plink2-files/hgdp_wgs.20190516.full.chr22.psam"
     output:
-        Qx = "{root.}"
+        Qx = "{root}/temp.txt"
     shell:
         """
-        Rscript code/run_gwas/pick_snps.R {input.block} {input.betas_uncorrected} {input.betas_lat} {input.betas_long} {output.snps_uncorrected} {output.snps_lat} {output.snps_long}
+        Rscript code/run_gwas/pick_snps.R {output.Qx}
         """
 

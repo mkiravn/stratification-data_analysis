@@ -27,4 +27,4 @@ eur$SEX <- rep(NA, nrow(eur))
 colnames(eur) <- c("#IID", "SEX")
 
 # Write output
-fwrite(eur, outfile)
+fwrite(eur, outfile,row.names = F, col.names = T, quote = F, sep = "\t")
