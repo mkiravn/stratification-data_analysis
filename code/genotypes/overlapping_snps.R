@@ -23,8 +23,8 @@ ukbb <- subset(ukbb, ukbb$ALT_FREQS > 0.05 & ukbb$ALT_FREQS < 0.95)
 tp <- subset(tp, tp$ALT_FREQS > 0.05 & tp$ALT_FREQS < 0.95)
 
 # Subset to SNPs with missingness rate < 5%
-tp <- subset(tp, tp$OBS_CT > (0.95 * 2 * 929))
-ukbb <- subset(ukbb, ukbb$OBS_CT > (0.95 * 2 * 484656))
+tp <- subset(tp, tp$OBS_CT > (0.95 * max(tp$OBS_CT)))
+ukbb <- subset(ukbb, ukbb$OBS_CT > (0.95 *  max(ukbb$OBS_CT)))
 
 # Get overlapping SNPs with same alt/ref
 matched <- inner_join(ukbb, tp, by = c("#CHROM", "ID", "ALT", "REF"))

@@ -136,7 +136,7 @@ rule HGDP_freq:
         """
         plink2 --pfile {params.prefix_in} \
         --freq \
-	      --threads 8 \
+	--threads 8 \
         --memory 38000 \
         --out {params.prefix_out}
         """
@@ -147,7 +147,7 @@ rule HGDP_freq:
 rule get_overlapping_snps:
     input:
         freq_hgdp="{root}/data/hgdp/variant_freq/{dataset}/hgdp_wgs.20190516.full.chr{chr}.afreq",
-	      freq_ukbb="{root}/data/ukbb/variant_freq/ukb_imp_chr{chr}_v3.afreq"
+	freq_ukbb="{root}/data/ukbb/variant_freq/ukb_imp_chr{chr}_v3.afreq"
     output:
         "{root}/data/ukbb-hgdp/variants/{dataset}/snps_chr{chr}.txt"
     shell:
@@ -162,7 +162,7 @@ rule HGDP_recode:
         psam="{root}/data/hgdp/plink2-files/{dataset}/hgdp_wgs.20190516.full.chr{chr}.psam",
         pvar="{root}/data/hgdp/plink2-files/{dataset}/hgdp_wgs.20190516.full.chr{chr}.pvar",
         pgen="{root}/data/hgdp/plink2-files/{dataset}/hgdp_wgs.20190516.full.chr{chr}.pgen",
-      	snp_list="{root}/data/ukbb-hgdp/{dataset}/variants/snps_chr{chr}.txt"
+      	snp_list="{root}/data/ukbb-hgdp/variants/{dataset}/snps_chr{chr}.txt"
     output:
         psam="{root}/data/ukbb-hgdp/hgdp/plink2-files/{dataset}/hgdp_wgs.20190516.full.chr{chr}.psam",
         pvar="{root}/data/ukbb-hgdp/hgdp/plink2-files/{dataset}/hgdp_wgs.20190516.full.chr{chr}.pvar",
@@ -174,8 +174,8 @@ rule HGDP_recode:
         """
         plink2 --pfile {params.prefix_in} \
         --extract {input.snp_list} \
-	      --ref-allele {input.snp_list} \
-	      --make-pgen \
+	--ref-allele {input.snp_list} \
+	--make-pgen \
         --out {params.prefix_out}
         """
 
