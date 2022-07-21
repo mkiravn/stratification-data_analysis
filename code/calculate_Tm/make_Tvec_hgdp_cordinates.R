@@ -42,7 +42,7 @@ fwrite(long,paste0(out_file_ALL, "_longitude.txt"), row.names = F, col.names = T
 
 # Merge sample and fam files
 df <- inner_join(fam, pops, by = c("#IID"= "sample"))
-df <- df %>% select("#IID", "latitude", "longitude") %>% filter(region == "EUROPE")
+df <- df %>% filter(region == "EUROPE") %>% select("#IID", "latitude", "longitude")
 
 # Mean center coordinates
 df$latitude <- df$latitude - mean(df$latitude)

@@ -217,7 +217,7 @@ rule project_Tvec_chr:
 # Add together individal chromosomes
 rule concat_chr_Tm:
     input:
-        expand("{root}/data/ukbb-hgdp/calculate_Tm/{dataset}/Tm_{chr}.txt", chr = CHR, root=ROOT)
+        expand("{root}/data/ukbb-hgdp/calculate_Tm/{dataset}/Tm_{chr}.txt", chr = CHR, root=ROOT, dataset = DATASET)
     output:
         "{root}/data/ukbb-hgdp/calculate_Tm/{dataset}/TGWAS.txt"
     params:
