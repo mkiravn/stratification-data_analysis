@@ -4,10 +4,15 @@ CHR =["21", "22"]
 #  CHR.append(str(i))
 ROOT = ["/gpfs/data/berg-lab/jgblanc/stratification-data_analysis"]
 DATASET = ["ALL", "EUR"]
+PVAL = ["p-1", "p-5e-8"]
+
+def get_params(x):
+  out = x.split("-")[1]
+  return out
 
 rule all:
     input:
-        expand("{root}/data/ukbb-hgdp/calculate_Tm/{dataset}/TGWAS.txt", root=ROOT,  chr=CHR, dataset = DATASET)
+        expand("{root}/data/ukbb-hgdp/run_gwas/ascertained/{dataset}/{pval}/ukb_imp_chr{chr}_v3.Height.betas", root=ROOT,  chr=CHR, dataset = DATASET, pval=PVAL)
 
 ## UKBB Genotype data processing
 
@@ -232,12 +237,12 @@ rule concat_chr_Tm:
 rule format_covars:
     input:
         fam = "{root}/data/ukbb/plink2-files/ukb_imp_chr22_v3.psam",
-        TGWAS = "{root}/data/ukbb-hgdp/calculate_Tm/TGWAS.txt",
+        TGWAS = "{root}/data/ukbb-hgdp/calculate_Tm/{datatset}/TGWAS.txt",
         aar = "/gpfs/data/berg-lab/data/ukbb/phenotypes/age_at_recruitment_21022.txt",
         sex = "/gpfs/data/berg-lab/data/ukbb/phenotypes/genetic_sex_22001.txt",
         array = "/gpfs/data/berg-lab/data/ukbb/phenotypes/genotype_measurement_batch_22000.txt"
     output:
-        "{root}/data/ukbb-hgdp/run_gwas/covars.txt"
+        "{root}/data/ukbb-hgdp/run_gwas/{dataset}/covars.txt"
     shell:
         """
         Rscript code/run_gwas/format_covars.R {input.fam} {input.TGWAS} {input.aar} {input.sex} {input.array} {output}
@@ -246,64 +251,73 @@ rule format_covars:
 rule run_gwas_uncorrected:
     input:
         genos = "{root}/data/ukbb/plink2-files/ukb_imp_chr{chr}_v3.pgen",
-        covar = "{root}/data/ukbb-hgdp/run_gwas/covars.txt",
+        covar = "{root}/data/ukbb-hgdp/run_gwas/{dataset}/covars.txt",
         pheno = "{root}/data/phenotypes/StandingHeight_50.txt",
-	snp_list = "{root}/data/ukbb-hgdp/variants/snps_chr{chr}.txt"
+	snp_list = "{root}/data/ukbb-hgdp/variants/{dataset}/snps_chr{chr}.txt"
     output:
-        "{root}/data/ukbb-hgdp/run_gwas/effect_sizes/ukb_imp_chr{chr}_v3.Height.glm.linear"
+        "{root}/data/ukbb-hgdp/run_gwas/effect_sizes/{dataset}/ukb_imp_chr{chr}_v3.Height.glm.linear"
+    params:
+        pfile = "{root}/data/ukbb/plink2-files/ukb_imp_chr{chr}_v3",
+        out = "{root}/data/ukbb-hgdp/run_gwas/effect_sizes/{dataset}/ukb_imp_chr{chr}_v3"
     shell:
         """
         plink2 \
-        --pfile {wildcards.root}/data/ukbb/plink2-files/ukb_imp_chr{wildcards.chr}_v3 \
+        --pfile {params.pfile} \
 	--extract {input.snp_list} \
         --glm hide-covar \
         --covar {input.covar} \
         --covar-col-nums 3-5 \
         --pheno {input.pheno} \
         --pheno-name Height \
-        --out {wildcards.root}/data/ukbb-hgdp/run_gwas/effect_sizes/ukb_imp_chr{wildcards.chr}_v3
+        --out {params.out}
         """
 
 rule run_gwas_latitude:
     input:
         genos = "{root}/data/ukbb/plink2-files/ukb_imp_chr{chr}_v3.pgen",
-        covar = "{root}/data/ukbb-hgdp/run_gwas/covars.txt",
+        covar = "{root}/data/ukbb-hgdp/run_gwas/{dataset}/covars.txt",
         pheno = "{root}/data/phenotypes/StandingHeight_50.txt",
-	snp_list="{root}/data/ukbb-hgdp/variants/snps_chr{chr}.txt"
+	snp_list = "{root}/data/ukbb-hgdp/variants/{dataset}/snps_chr{chr}.txt"
     output:
-        "{root}/data/ukbb-hgdp/run_gwas/effect_sizes/ukb_imp_chr{chr}_v3-Lat.Height.glm.linear"
+        "{root}/data/ukbb-hgdp/run_gwas/effect_sizes/{dataset}/ukb_imp_chr{chr}_v3-Lat.Height.glm.linear"
+    params:
+        pfile = "{root}/data/ukbb/plink2-files/ukb_imp_chr{chr}_v3",
+        out = "{root}/data/ukbb-hgdp/run_gwas/effect_sizes/{dataset}/ukb_imp_chr{chr}_v3-Lat"
     shell:
         """
         plink2 \
-        --pfile {wildcards.root}/data/ukbb/plink2-files/ukb_imp_chr{wildcards.chr}_v3 \
+        --pfile {params.pfile} \
 	--extract {input.snp_list} \
         --glm hide-covar \
         --covar {input.covar} \
         --covar-col-nums 3-6 \
         --pheno {input.pheno} \
         --pheno-name Height \
-        --out {wildcards.root}/data/ukbb-hgdp/run_gwas/effect_sizes/ukb_imp_chr{wildcards.chr}_v3-Lat
+        --out {params.out}
         """
 
 rule run_gwas_longitude:
     input:
         genos = "{root}/data/ukbb/plink2-files/ukb_imp_chr{chr}_v3.pgen",
-        covar = "{root}/data/ukbb-hgdp/run_gwas/covars.txt",
+        covar = "{root}/data/ukbb-hgdp/run_gwas/{dataset}/covars.txt",
         pheno = "{root}/data/phenotypes/StandingHeight_50.txt",
-        snp_list="{root}/data/ukbb-hgdp/variants/snps_chr{chr}.txt"
+	      snp_list = "{root}/data/ukbb-hgdp/variants/{dataset}/snps_chr{chr}.txt"
     output:
-        "{root}/data/ukbb-hgdp/run_gwas/effect_sizes/ukb_imp_chr{chr}_v3-Long.Height.glm.linear"
+        "{root}/data/ukbb-hgdp/run_gwas/effect_sizes/{dataset}/ukb_imp_chr{chr}_v3-Long.Height.glm.linear"
+    params:
+        pfile = "{root}/data/ukbb/plink2-files/ukb_imp_chr{chr}_v3",
+        out = "{root}/data/ukbb-hgdp/run_gwas/effect_sizes/{dataset}/ukb_imp_chr{chr}_v3-Long"
     shell:
         """
         plink2 \
-        --pfile {wildcards.root}/data/ukbb/plink2-files/ukb_imp_chr{wildcards.chr}_v3 \
+        --pfile {params.pfile} \
         --extract {input.snp_list} \
         --glm hide-covar \
         --covar {input.covar} \
         --covar-col-nums 3-5,7 \
         --pheno {input.pheno} \
         --pheno-name Height \
-        --out {wildcards.root}/data/ukbb-hgdp/run_gwas/effect_sizes/ukb_imp_chr{wildcards.chr}_v3-Long
+        --out {params.out}
         """
 
 ## Ascertain SNPs for PGS
@@ -315,12 +329,14 @@ rule ascertain_snps:
         betas_long= "{root}/data/ukbb-hgdp/run_gwas/effect_sizes/ukb_imp_chr{chr}_v3-Long.Height.glm.linear",
         block = "{root}/data/LD_blocks/fourier_ls-all_parsed.bed"
     output:
-        snps_uncorrected = "{root}/data/ukbb-hgdp/run_gwas/ascertained/ukb_imp_chr{chr}_v3.Height.betas",
-        snps_lat = "{root}/data/ukbb-hgdp/run_gwas/ascertained/ukb_imp_chr{chr}_v3.Height-Lat.betas",
-        snps_long = "{root}/data/ukbb-hgdp/run_gwas/ascertained/ukb_imp_chr{chr}_v3.Height-Long.betas"
+        snps_uncorrected = "{root}/data/ukbb-hgdp/run_gwas/ascertained/{dataset}/{pval}/ukb_imp_chr{chr}_v3.Height.betas",
+        snps_lat = "{root}/data/ukbb-hgdp/run_gwas/ascertained/{dataset}/{pval}/ukb_imp_chr{chr}_v3.Height-Lat.betas",
+        snps_long = "{root}/data/ukbb-hgdp/run_gwas/ascertained/{dataset}/{pval}/ukb_imp_chr{chr}_v3.Height-Long.betas"
+    params:
+        pt = lambda wildcards: get_params(wildcards.pval)
     shell:
         """
-        Rscript code/run_gwas/pick_snps.R {input.block} {input.betas_uncorrected} {input.betas_lat} {input.betas_long} {output.snps_uncorrected} {output.snps_lat} {output.snps_long}
+        Rscript code/run_gwas/pick_snps.R {input.block} {input.betas_uncorrected} {input.betas_lat} {input.betas_long} {output.snps_uncorrected} {output.snps_lat} {output.snps_long} {params.pt}
         """
 
 ## Do PGA Test
