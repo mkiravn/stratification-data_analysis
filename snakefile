@@ -7,7 +7,7 @@ DATASET = ["ALL", "EUR"]
 
 rule all:
     input:
-        expand("{root}/data/ukbb-hgdp/hgdp/plink2-files/{dataset}/hgdp_wgs.20190516.full.chr{chr}.psam", root=ROOT,  chr=CHR, dataset = DATASET)
+        expand("{root}/data/ukbb-hgdp/calculate_Tm/{dataset}/TGWAS.txt", root=ROOT,  chr=CHR, dataset = DATASET)
 
 ## UKBB Genotype data processing
 
@@ -181,15 +181,16 @@ rule HGDP_recode:
 
 ## Make latitude and longitude test vector
 
-rule make_Tvec_cordinates_full:
+rule make_Tvec_cordinates:
     input:
         psam="{root}/data/ukbb-hgdp/hgdp/plink2-files/hgdp_wgs.20190516.full.chr22.psam",
         populations="{root}/data/hgdp/hgdp_wgs.20190516.metadata.txt"
     output:
-        "{root}/data/ukbb-hgdp/calculate_Tm/Tvec_cordinates.txt"
+        "{root}/data/ukbb-hgdp/calculate_Tm/ALL/Tvec_cordinates.txt",
+        "{root}/data/ukbb-hgdp/calculate_Tm/EUR/Tvec_cordinates.txt"
     shell:
         """
-        Rscript code/calculate_Tm/make_Tvec_hgdp_cordinates.R {input.psam} {input.populations} {wildcards.root}/data/ukbb-hgdp/calculate_Tm/Tvec
+        Rscript code/calculate_Tm/make_Tvec_hgdp_cordinates.R {input.psam} {input.populations} {wildcards.root}/data/ukbb-hgdp/calculate_Tm/ALL/Tvec {wildcards.root}/data/ukbb-hgdp/calculate_Tm/EUR/Tvec
         """
 
 ## Compute TGWAS
@@ -197,28 +198,33 @@ rule make_Tvec_cordinates_full:
 # Each chromosome individually
 rule project_Tvec_chr:
     input:
-        Tvec="{root}/data/ukbb-hgdp/calculate_Tm/Tvec_cordinates.txt",
-        tp_genos="{root}/data/ukbb-hgdp/hgdp/plink2-files/hgdp_wgs.20190516.full.chr{chr}.pgen",
+        Tvec="{root}/data/ukbb-hgdp/calculate_Tm/{dataset}/Tvec_cordinates.txt",
+        tp_genos="{root}/data/ukbb-hgdp/hgdp/plink2-files/{dataset}/hgdp_wgs.20190516.full.chr{chr}.pgen",
         gp_genos="{root}/data/ukbb/plink2-files/ukb_imp_chr{chr}_v3.pgen",
-        overlap_snps="{root}/data/ukbb-hgdp/variants/snps_chr{chr}.txt"
+        overlap_snps="{root}/data/ukbb-hgdp/variants/{dataset}/snps_chr{chr}.txt"
     output:
-        "{root}/data/ukbb-hgdp/calculate_Tm/Tm_{chr}.txt"
+        "{root}/data/ukbb-hgdp/calculate_Tm/{dataset}/Tm_{chr}.txt"
+    params:
+        tp_prefix = "{root}/data/ukbb-hgdp/hgdp/plink2-files/{dataset}/hgdp_wgs.20190516.full.chr{chr}",
+        gp_prefix = "{root}/data/ukbb/plink2-files/ukb_imp_chr{chr}_v3",
+        tvec_prefix = "{root}/data/ukbb-hgdp/calculate_Tm/{dataset}/Tvec",
+        out_prefix = "{root}/data/ukbb-hgdp/calculate_Tm/{dataset}/"
     shell:
         """
-        Rscript code/calculate_Tm/project_Tvec_chr.R {wildcards.root}/data/ukbb-hgdp/hgdp/plink2-files/hgdp_wgs.20190516.full.chr{wildcards.chr} {wildcards.root}/data/ukbb/plink2-files/ukb_imp_chr{wildcards.chr}_v3 {wildcards.root}/data/ukbb-hgdp/calculate_Tm/Tvec {wildcards.root}/data/ukbb-hgdp/calculate_Tm/ {input.overlap_snps} {output}
+        Rscript code/calculate_Tm/project_Tvec_chr.R {params.tp_prefix} {params.gp_prefix} {params.tvec_prefix} {params.out_prefix} {input.overlap_snps} {output}
         """
 
 # Add together individal chromosomes
 rule concat_chr_Tm:
     input:
-        expand("{root}/data/ukbb-hgdp/calculate_Tm/Tm_{chr}.txt", chr = CHR, root=ROOT)
+        expand("{root}/data/ukbb-hgdp/calculate_Tm/{dataset}/Tm_{chr}.txt", chr = CHR, root=ROOT)
     output:
-        "{root}/data/ukbb-hgdp/calculate_Tm/TGWAS.txt"
+        "{root}/data/ukbb-hgdp/calculate_Tm/{dataset}/TGWAS.txt"
     params:
         chromosomes = CHR
     shell:
         """
-        Rscript code/calculate_Tm/concat_Tm.R {wildcards.root}/data/ukbb-hgdp/calculate_Tm/Tm {output} {params.chromosomes}
+        Rscript code/calculate_Tm/concat_Tm.R {wildcards.root}/data/ukbb-hgdp/calculate_Tm/{wildcards.dataset}/Tm {output} {params.chromosomes}
         """
 
 ## Run GWAS
