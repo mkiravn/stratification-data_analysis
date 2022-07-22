@@ -3,12 +3,12 @@
 
 args=commandArgs(TRUE)
 
-if(length(args)<7){stop("Rscript pick_snps.R <blocks> <uncorrected betas> <lat corrected betas> <long corrected betas> <outfile uncorrected> <outfile lat> <outfile long>")}
+if(length(args)<8){stop("Rscript pick_snps.R <blocks> <uncorrected betas> <lat corrected betas> <long corrected betas> <outfile uncorrected> <outfile lat> <outfile long>")}
 
 suppressWarnings(suppressMessages({
   library(data.table)
   library(dplyr)
-  library(tidyr)
+  #library(tidyr)
 }))
 
 block_file = args[1]
@@ -19,6 +19,7 @@ out_u = args[5]
 out_lat = args[6]
 out_long = args[7]
 pt = as.numeric(args[8])
+print(pt)
 
 # Read in block file
 ld_blocks = fread(block_file)
@@ -41,6 +42,9 @@ assign_SNP_to_block <- function(CHR, BP, block = ld_blocks) {
 betas_u <- fread(u_file)
 betas_lat <- fread(lat_file)
 betas_long <- fread(long_file)
+
+
+test <- betas_u %>% filter(P < pt) 
 
 # Threshold and asign all SNPs to blocks
 df_u <- betas_u %>%

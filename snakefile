@@ -4,10 +4,10 @@ CHR =["21", "22"]
 #  CHR.append(str(i))
 ROOT = ["/gpfs/data/berg-lab/jgblanc/stratification-data_analysis"]
 DATASET = ["ALL", "EUR"]
-PVAL = ["p-1", "p-5e-8"]
+PVAL = ["p_1", "p_5e-8"]
 
 def get_params(x):
-  out = x.split("-")[1]
+  out = x.split("_")[1]
   return out
 
 rule all:
@@ -237,7 +237,7 @@ rule concat_chr_Tm:
 rule format_covars:
     input:
         fam = "{root}/data/ukbb/plink2-files/ukb_imp_chr22_v3.psam",
-        TGWAS = "{root}/data/ukbb-hgdp/calculate_Tm/{datatset}/TGWAS.txt",
+        TGWAS = "{root}/data/ukbb-hgdp/calculate_Tm/{dataset}/TGWAS.txt",
         aar = "/gpfs/data/berg-lab/data/ukbb/phenotypes/age_at_recruitment_21022.txt",
         sex = "/gpfs/data/berg-lab/data/ukbb/phenotypes/genetic_sex_22001.txt",
         array = "/gpfs/data/berg-lab/data/ukbb/phenotypes/genotype_measurement_batch_22000.txt"
@@ -324,9 +324,9 @@ rule run_gwas_longitude:
 
 rule ascertain_snps:
     input:
-        betas_uncorrected = "{root}/data/ukbb-hgdp/run_gwas/effect_sizes/ukb_imp_chr{chr}_v3.Height.glm.linear",
-        betas_lat = "{root}/data/ukbb-hgdp/run_gwas/effect_sizes/ukb_imp_chr{chr}_v3-Lat.Height.glm.linear",
-        betas_long= "{root}/data/ukbb-hgdp/run_gwas/effect_sizes/ukb_imp_chr{chr}_v3-Long.Height.glm.linear",
+        betas_uncorrected = "{root}/data/ukbb-hgdp/run_gwas/effect_sizes/{dataset}/ukb_imp_chr{chr}_v3.Height.glm.linear",
+        betas_lat = "{root}/data/ukbb-hgdp/run_gwas/effect_sizes/{dataset}/ukb_imp_chr{chr}_v3-Lat.Height.glm.linear",
+        betas_long= "{root}/data/ukbb-hgdp/run_gwas/effect_sizes/{dataset}/ukb_imp_chr{chr}_v3-Long.Height.glm.linear",
         block = "{root}/data/LD_blocks/fourier_ls-all_parsed.bed"
     output:
         snps_uncorrected = "{root}/data/ukbb-hgdp/run_gwas/ascertained/{dataset}/{pval}/ukb_imp_chr{chr}_v3.Height.betas",
