@@ -1,0 +1,35 @@
+PLINK v2.00a3LM AVX2 Intel (1 Jul 2021)
+Options in effect:
+  --extract /gpfs/data/berg-lab/jgblanc/stratification-data_analysis/data/ukbb-hgdp/variants/ALL/snps_chr22.txt
+  --make-pgen
+  --out /gpfs/data/berg-lab/jgblanc/stratification-data_analysis/data/ukbb-hgdp/hgdp/plink2-files/ALL/hgdp_wgs.20190516.full.chr22
+  --pfile /gpfs/data/berg-lab/jgblanc/stratification-data_analysis/data/hgdp/plink2-files/ALL/hgdp_wgs.20190516.full.chr22
+  --ref-allele /gpfs/data/berg-lab/jgblanc/stratification-data_analysis/data/ukbb-hgdp/variants/ALL/snps_chr22.txt
+
+Hostname: cri16in002
+Working directory: /gpfs/data/berg-lab/jgblanc/stratification-data_analysis
+Start time: Tue Jul 19 17:30:29 2022
+
+Random number seed: 1658269829
+128952 MiB RAM detected; reserving 64476 MiB for main workspace.
+Using up to 28 threads (change this with --threads).
+929 samples (0 females, 0 males, 929 ambiguous; 929 founders) loaded from
+/gpfs/data/berg-lab/jgblanc/stratification-data_analysis/data/hgdp/plink2-files/ALL/hgdp_wgs.20190516.full.chr22.psam.
+180451 variants loaded from
+/gpfs/data/berg-lab/jgblanc/stratification-data_analysis/data/hgdp/plink2-files/ALL/hgdp_wgs.20190516.full.chr22.pvar.
+Note: No phenotype data present.
+--extract: 69245 variants remaining.
+69245 variants remaining after main filters.
+--ref-allele: 18609 sets of allele codes rotated.
+Warning: 1 variant ID in --ref-allele file missing from main dataset.
+Writing
+/gpfs/data/berg-lab/jgblanc/stratification-data_analysis/data/ukbb-hgdp/hgdp/plink2-files/ALL/hgdp_wgs.20190516.full.chr22.psam
+... done.
+Writing
+/gpfs/data/berg-lab/jgblanc/stratification-data_analysis/data/ukbb-hgdp/hgdp/plink2-files/ALL/hgdp_wgs.20190516.full.chr22.pvar
+... done.
+Writing
+/gpfs/data/berg-lab/jgblanc/stratification-data_analysis/data/ukbb-hgdp/hgdp/plink2-files/ALL/hgdp_wgs.20190516.full.chr22.pgen
+... done.
+
+End time: Tue Jul 19 17:30:29 2022
