@@ -12,7 +12,7 @@ def get_params(x):
 
 rule all:
     input:
-        expand("{root}/data/ukbb-hgdp/run_gwas/ascertained/{dataset}/{pval}/ukb_imp_chr{chr}_v3.Height.betas", root=ROOT,  chr=CHR, dataset = DATASET, pval=PVAL)
+        expand("{root}/data/ukbb-hgdp/plink2-files/hgdp_wgs.20190516.full.pgen"", root=ROOT,  chr=CHR, dataset = DATASET, pval=PVAL)
 
 ## UKBB Genotype data processing
 
@@ -340,6 +340,26 @@ rule ascertain_snps:
         """
 
 ## Do PGA Test
+
+rule combine_hgdp_chromosomes:
+    input:
+        hgdp_genos = expand("{root}/data/ukbb-hgdp/plink2-files/hgdp_wgs.20190516.full.chr{chr}.psam", chr = CHR)
+        pgen_file = "{root}/data/ukbb-hgdp/plink2-files/all_chroms_list.txt"
+    output:
+        "{root}/data/ukbb-hgdp/plink2-files/hgdp_wgs.20190516.full.psam",
+        "{root}/data/ukbb-hgdp/plink2-files/hgdp_wgs.20190516.full.pvar",
+        "{root}/data/ukbb-hgdp/plink2-files/hgdp_wgs.20190516.full.pgen"
+    params:
+        in_prefix = "{root}/data/ukbb-hgdp/run_gwas/ascertained/{dataset}/ukb_imp_chr"
+        out_prefix = "{root}/data/ukbb-hgdp/plink2-files/hgdp_wgs.20190516.full"
+    shell:
+        """
+        plink2 \
+        --pfile {params.in_prefix} \
+        --pmerge-list {input.pgen_file} \
+        --out {param.out_prefix}
+        """
+
 
 rule compute_Qx:
     input:

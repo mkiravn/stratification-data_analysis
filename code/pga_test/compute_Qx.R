@@ -32,7 +32,7 @@ read_genos <- function(geno_prefix, betas) {
   for (i in 1:length(var.indx)) {
     var.indx[i] <- pgenlibr::GetVariantsById(pvar,var.ids[i])
   }
-  X <- ReadList(d1,var.indx, meanimpute=F)
+  X <- ReadList(d1,var.indx, meanimpute=T) # Check this
   colnames(X) <- var.ids
 
   return(X)
@@ -106,17 +106,14 @@ en <- function(betas, tvec, Va, X, true_file, lambda_T) {
 # Load in Test vectors
 TV <- fread(tvec_file)
 
-
-
-
-
-
+# Compute
 
 
 # Calcluate PGS by looping through chromosomes
 N <- nrow(fread(paste0(genos_prefix, i, ".psam")))
 vecVa <- rep(0, (chr_end - chr_start + 1))
 matPGS <- matrix(0,nrow = N,  ncol = (chr_end - chr_start + 1))
+c <- 1
 for (i in chr_start:chr_end) {
 
   # Read in betas
@@ -130,11 +127,16 @@ for (i in chr_start:chr_end) {
   X <- read_genos(geno_prefix = tp_file_path, betas = betas)
 
   # Compute PGS
-  vecPGS[,i] <- pgs(X, betas)
+  matPGS[,c] <- pgs(X, betas)
 
   # Compute Va
-  vecVa[i] <- calc_Va(X, betas)
+  vecVa[c] <- calc_Va(X, betas)
 
+  # Compute Qx
+  Qx <-
+
+  # Counter
+  c <- c + 1
 }
 
 # Combine chromosome
