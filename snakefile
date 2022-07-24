@@ -12,7 +12,9 @@ def get_params(x):
 
 rule all:
     input:
-        expand("{root}/data/ukbb-hgdp/plink2-files/hgdp_wgs.20190516.full.pgen"", root=ROOT,  chr=CHR, dataset = DATASET, pval=PVAL)
+        expand("{root}/data/ukbb-hgdp/hgdp/plink2-files/{dataset}/hgdp_wgs.20190516.full.pgen", root=ROOT,  chr=CHR, dataset = DATASET, pval=PVAL)
+
+
 
 ## UKBB Genotype data processing
 
@@ -343,39 +345,41 @@ rule ascertain_snps:
 
 rule combine_hgdp_chromosomes:
     input:
-        hgdp_genos = expand("{root}/data/ukbb-hgdp/plink2-files/hgdp_wgs.20190516.full.chr{chr}.psam", chr = CHR)
-        pgen_file = "{root}/data/ukbb-hgdp/plink2-files/all_chroms_list.txt"
+        hgdp_genos = expand("{{root}}/data/ukbb-hgdp/hgdp/plink2-files/{{dataset}}/hgdp_wgs.20190516.full.chr{chr}.psam", chr = CHR),
     output:
-        "{root}/data/ukbb-hgdp/plink2-files/hgdp_wgs.20190516.full.psam",
-        "{root}/data/ukbb-hgdp/plink2-files/hgdp_wgs.20190516.full.pvar",
-        "{root}/data/ukbb-hgdp/plink2-files/hgdp_wgs.20190516.full.pgen"
+        "{root}/data/ukbb-hgdp/hgdp/plink2-files/{dataset}/hgdp_wgs.20190516.full.psam",
+        "{root}/data/ukbb-hgdp/hgdp/plink2-files/{dataset}/hgdp_wgs.20190516.full.pvar",
+        "{root}/data/ukbb-hgdp/hgdp/plink2-files/{dataset}/hgdp_wgs.20190516.full.pgen"
     params:
-        in_prefix = "{root}/data/ukbb-hgdp/run_gwas/ascertained/{dataset}/ukb_imp_chr"
-        out_prefix = "{root}/data/ukbb-hgdp/plink2-files/hgdp_wgs.20190516.full"
+        out_prefix = "{root}/data/ukbb-hgdp/hgdp/plink2-files/{dataset}/hgdp_wgs.20190516.full",
+        file_list = expand("{{root}}/data/ukbb-hgdp/hgdp/plink2-files/{{dataset}}/hgdp_wgs.20190516.full.chr{chr}", chr = CHR)
     shell:
         """
+        echo {params.file_list} > tmp1.txt
+        cat tmp1.txt | tr ' ' '\n' > chrs.txt
         plink2 \
-        --pfile {params.in_prefix} \
-        --pmerge-list {input.pgen_file} \
-        --out {param.out_prefix}
+        --pmerge-list chrs.txt \
+        --out {params.out_prefix}
+        rm tmp1.txt
+        rm chrs.txt
         """
 
 
-rule compute_Qx:
-    input:
-        snps_uncorrected = expand("{root}/data/ukbb-hgdp/run_gwas/ascertained/{dataset}/{pval}/ukb_imp_chr{chr}_v3.Height.betas", chr = CHR),
-        snps_lat = expand("{root}/data/ukbb-hgdp/run_gwas/ascertained/{dataset}/{pval}/ukb_imp_chr{chr}_v3.Height-Lat.betas", chr=CHR),
-        snps_long = expand("{root}/data/ukbb-hgdp/run_gwas/ascertained/{dataset}/{pval}/ukb_imp_chr{chr}_v3.Height-Long.betas", chr = CHR),
-        Tvec = "{root}/data/ukbb-hgdp/calculate_Tm/{dataset}/Tvec_cordinates.txt",
-        hgdp_genos = "{root}/data/ukbb-hgdp/plink2-files/hgdp_wgs.20190516.full.chr22.psam"
-    output:
-        Qx = "{root}/data/pga_test/{dataset}/Qx.txt",
-        PGS = "{root}/data/pga_test/{dataset}/PGS.txt"
-    params:
-        snp_prefix = "{root}/data/ukbb-hgdp/run_gwas/ascertained/{dataset}/ukb_imp_chr"
-        tp_prefix = "{root}/data/ukbb-hgdp/plink2-files/hgdp_wgs.20190516.full.chr"
-    shell:
-        """
-        Rscript code/pga_test/compute_Qx.R {params.snp_prefix} {params.tp_prefix} {input.Tvec} {output.Qx} {output.PGS}
-        """
+#rule compute_Qx:
+#    input:
+#        snps_uncorrected = expand("{root}/data/ukbb-hgdp/run_gwas/ascertained/{dataset}/{pval}/ukb_imp_chr{chr}_v3.Height.betas", chr = CHR),
+#        snps_lat = expand("{root}/data/ukbb-hgdp/run_gwas/ascertained/{dataset}/{pval}/ukb_imp_chr{chr}_v3.Height-Lat.betas", chr=CHR),
+#        snps_long = expand("{root}/data/ukbb-hgdp/run_gwas/ascertained/{dataset}/{pval}/ukb_imp_chr{chr}_v3.Height-Long.betas", chr = CHR),
+#        Tvec = "{root}/data/ukbb-hgdp/calculate_Tm/{dataset}/Tvec_cordinates.txt",
+#        hgdp_genos = "{root}/data/ukbb-hgdp/plink2-files/{dataset}/hgdp_wgs.20190516.full.chr22.psam"
+#    output:
+#        Qx = "{root}/data/pga_test/{dataset}/Qx.txt",
+#        PGS = "{root}/data/pga_test/{dataset}/PGS.txt"
+#    params:
+#        snp_prefix = "{root}/data/ukbb-hgdp/run_gwas/ascertained/{dataset}/ukb_imp_chr",
+#        tp_prefix = "{root}/data/ukbb-hgdp/plink2-files/{dataset}/hgdp_wgs.20190516.full.chr"
+#    shell:
+#        """
+#        Rscript code/pga_test/compute_Qx.R {params.snp_prefix} {params.tp_prefix} {input.Tvec} {output.Qx} {output.PGS}
+#        """
 
