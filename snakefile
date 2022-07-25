@@ -6,8 +6,18 @@ ROOT = ["/gpfs/data/berg-lab/jgblanc/stratification-data_analysis"]
 DATASET = ["ALL", "EUR"]
 PVAL = ["p_1", "p_5e-8"]
 
+
 def get_params(x):
   out = x.split("_")[1]
+  return out
+
+def get_size_minus_one(x):
+  if  x == "ALL":
+    out = 928
+  if x == "EUR":
+    out = 154
+  else:
+    out = "ERROR"
   return out
 
 rule all:
@@ -366,20 +376,21 @@ rule combine_hgdp_chromosomes:
 
 rule PCA:
     input:
-        "{root}/data/ukbb-hgdp/hgdp/plink2-files/{dataset}/hgdp_wgs.20190516.full.psam",
-        "{root}/data/ukbb-hgdp/hgdp/plink2-files/{dataset}/hgdp_wgs.20190516.full.pvar",
-        "{root}/data/ukbb-hgdp/hgdp/plink2-files/{dataset}/hgdp_wgs.20190516.full.pgen"
+        psam="{root}/data/ukbb-hgdp/hgdp/plink2-files/{dataset}/hgdp_wgs.20190516.full.psam",
+        pvar="{root}/data/ukbb-hgdp/hgdp/plink2-files/{dataset}/hgdp_wgs.20190516.full.pvar",
+        pgen="{root}/data/ukbb-hgdp/hgdp/plink2-files/{dataset}/hgdp_wgs.20190516.full.pgen"
     output:
         "{root}/data/ukbb-hgdp/hgdp/PCA/{dataset}/pca.eigenvec",
         "{root}/data/ukbb-hgdp/hgdp/PCA/{dataset}/pca.eigenval"
     params:
         out_prefix = "{root}/data/ukbb-hgdp/hgdp/PCA/{dataset}/pca",
         pfile_prefix = "{root}/data/ukbb-hgdp/hgdp/plink2-files/{dataset}/hgdp_wgs.20190516.full"
+        n_minus_1 = lambda wildcards: get_size_minus_one(wildcards.dataset)
     shell:
         """
         plink2 \
         --pfile {params.pfile_prefix} \
-        --pca \
+        --pca {params.n_minus_1} \
         --out {params.out_prefix}
         """
 
