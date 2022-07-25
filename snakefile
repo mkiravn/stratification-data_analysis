@@ -22,7 +22,7 @@ def get_size_minus_one(x):
 
 rule all:
     input:
-        expand("{root}/data/pga_test/{dataset}/Lambda_T.txt", root=ROOT,  chr=CHR, dataset = DATASET, pval=PVAL)
+        expand("{root}/data/pga_test/{dataset}/{pval}/Qx.txt", root=ROOT,  chr=CHR, dataset = DATASET, pval=PVAL)
 
 
 
@@ -407,21 +407,22 @@ rule calc_lambdaT:
 	      """
 
 
-#rule compute_Qx:
-#    input:
-#        snps_uncorrected = expand("{root}/data/ukbb-hgdp/run_gwas/ascertained/{dataset}/{pval}/ukb_imp_chr{chr}_v3.Height.betas", chr = CHR),
-#        snps_lat = expand("{root}/data/ukbb-hgdp/run_gwas/ascertained/{dataset}/{pval}/ukb_imp_chr{chr}_v3.Height-Lat.betas", chr=CHR),
-#        snps_long = expand("{root}/data/ukbb-hgdp/run_gwas/ascertained/{dataset}/{pval}/ukb_imp_chr{chr}_v3.Height-Long.betas", chr = CHR),
-#        Tvec = "{root}/data/ukbb-hgdp/calculate_Tm/{dataset}/Tvec_cordinates.txt",
-#        hgdp_genos = "{root}/data/ukbb-hgdp/plink2-files/{dataset}/hgdp_wgs.20190516.full.chr22.psam"
-#    output:
-#        Qx = "{root}/data/pga_test/{dataset}/Qx.txt",
-#        PGS = "{root}/data/pga_test/{dataset}/PGS.txt"
-#    params:
-#        snp_prefix = "{root}/data/ukbb-hgdp/run_gwas/ascertained/{dataset}/ukb_imp_chr",
-#        tp_prefix = "{root}/data/ukbb-hgdp/plink2-files/{dataset}/hgdp_wgs.20190516.full.chr"
-#    shell:
-#        """
-#        Rscript code/pga_test/compute_Qx.R {params.snp_prefix} {params.tp_prefix} {input.Tvec} {output.Qx} {output.PGS}
-#        """
+rule compute_Qx:
+    input:
+        snps_uncorrected = expand("{root}/data/ukbb-hgdp/run_gwas/ascertained/{dataset}/{pval}/ukb_imp_chr{chr}_v3.Height.betas", chr = CHR),
+        snps_lat = expand("{root}/data/ukbb-hgdp/run_gwas/ascertained/{dataset}/{pval}/ukb_imp_chr{chr}_v3.Height-Lat.betas", chr=CHR),
+        snps_long = expand("{root}/data/ukbb-hgdp/run_gwas/ascertained/{dataset}/{pval}/ukb_imp_chr{chr}_v3.Height-Long.betas", chr = CHR),
+        Tvec = "{root}/data/ukbb-hgdp/calculate_Tm/{dataset}/Tvec_cordinates.txt",
+        hgdp_genos = "{root}/data/ukbb-hgdp/hgdp/plink2-files/{dataset}/hgdp_wgs.20190516.full.psam",
+        lambdaT = "{root}/data/pga_test/{dataset}/Lambda_T.txt"
+    output:
+        Qx = "{root}/data/pga_test/{dataset}/{pval}/Qx.txt",
+        PGS = "{root}/data/pga_test/{dataset}/{pval}/PGS.txt"
+    params:
+        snp_prefix = "{root}/data/ukbb-hgdp/run_gwas/ascertained/{dataset}/{pval}/ukb_imp_chr",
+        tp_prefix = "{root}/data/ukbb-hgdp/plink2-files/{dataset}/hgdp_wgs.20190516.full"
+    shell:
+        """
+        Rscript code/pga_test/compute_Qx.R {params.snp_prefix} {params.tp_prefix} {input.Tvec} {input.lambdaT} {output.Qx} {output.PGS}
+        """
 

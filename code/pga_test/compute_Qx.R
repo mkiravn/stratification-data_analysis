@@ -3,7 +3,7 @@
 
 args=commandArgs(TRUE)
 
-if(length(args)<5){stop("Rscript compute Qx.R <prefix for ascertained snps> <test panel prefix> <test vec file> <qx outfile> <pgs outfile>   ")}
+if(length(args)<6){stop("Rscript compute Qx.R <prefix for ascertained snps> <test panel prefix> <test vec file> <lambdaT file> <qx outfile> <pgs outfile>   ")}
 
 suppressWarnings(suppressMessages({
   library(data.table)
@@ -15,19 +15,21 @@ suppressWarnings(suppressMessages({
 snp_prefix = args[1]
 genos_prefix = args[2]
 tvec_file = args[3]
-outfile_qx = args[4]
-outfile_pgs = args[5]
+lambdaT_file = args[4]
+outfile_qx = args[5]
+outfile_pgs = args[6]
 
 chr_start=21
 chr_end=22
+num = 1000
 
 
 # Function to read in genotype matrix for a set of variants (counted allele is the Alternate)
-read_genos <- function(geno_prefix, betas) {
+read_genos <- function(geno_prefix, betas_id) {
 
   pvar <- pgenlibr::NewPvar(paste0(geno_prefix, ".pvar"))
   d1 <- pgenlibr::NewPgen(paste0(geno_prefix, ".pgen"))
-  var.ids <- betas$ID
+  var.ids <- betas_id
   var.indx <- rep(0, length(var.ids))
   for (i in 1:length(var.indx)) {
     var.indx[i] <- pgenlibr::GetVariantsById(pvar,var.ids[i])
@@ -45,7 +47,7 @@ calc_Va <- function(geno_mat, es) {
   freq <- colMeans(geno_mat) /2
 
   # Pull out effect sizes only
-  effect_size <- es$BETA_Strat
+  effect_size <- es
 
   # Compute Va
   Va <- 2 * sum((effect_size)^2 * freq * (1 - freq))
@@ -60,7 +62,7 @@ pgs <- function(X, betas) {
   X <- apply(X, 2, function(y) y - mean(y))
 
   # Comput PGS
-  Bhat_strat <- betas$BETA_Strat
+  Bhat_strat <- betas
   Z_strat <- X %*% Bhat_strat
 
   # Format output
@@ -71,10 +73,10 @@ pgs <- function(X, betas) {
 }
 
 # Function to calculate Qx
-calc_Qx <- function(mprs, tvec, Va, lambda_T) {
+calc_Qx <- function(pgs, tvec, Va, lambda_T) {
 
   # Compute Qx Strat
-  Ztest <- t(tvec) %*% mprs$strat.adjusted
+  Ztest <- t(tvec) %*% pgs
   Qx_strat <- (t(Ztest) %*% Ztest) / (Va*lambda_T)
 
   return(Qx_strat)
@@ -87,16 +89,16 @@ flip <- function(betas) {
 }
 
 # Function to flip effect sizes and recompute Qx
-en <- function(betas, tvec, Va, X, true_file, lambda_T) {
+en <- function(betas, tvec, Va, X, lambda_T) {
 
   # Flip effect sizes
-  betas$BETA_Strat <- flip(betas$BETA_Strat)
+  b <- flip(betas)
 
   # Calculate PGS
-  prs <- pgs(X, betas)
+  prs <- pgs(X, b)
 
   # Calculate Qx
-  Qx <- t(calc_Qx(stand_PGS(prs, true_file), tvec, Va, lambda_T))
+  Qx <- calc_Qx(prs, tvec, Va, lambda_T)
 
   return(Qx)
 }
@@ -106,41 +108,121 @@ en <- function(betas, tvec, Va, X, true_file, lambda_T) {
 # Load in Test vectors
 TV <- fread(tvec_file)
 
-# Compute
+# Load in LambdaT
+lambdaT <- fread(lambdaT_file)
 
 
-# Calcluate PGS by looping through chromosomes
-N <- nrow(fread(paste0(genos_prefix, i, ".psam")))
-vecVa <- rep(0, (chr_end - chr_start + 1))
-matPGS <- matrix(0,nrow = N,  ncol = (chr_end - chr_start + 1))
-c <- 1
-for (i in chr_start:chr_end) {
+main <- function(beta_suffix) {
 
-  # Read in betas
-  betas <- fread(paste0(snp_prefix, i))
+  # Read in all estimated betas by looping through chromosomes
+  allBetasIDs <- c()
+  allBetas<- c()
+  for (i in chr_start:chr_end) {
 
-  # Flip betas to get the effect size of the ALT allele
-  betas <- betas %>% mutate(BETA_Strat = case_when(ALT == A1 ~ BETA, REF == A1 ~ -1 * BETA))
+    # Read in betas
+    betas <- fread(paste0(snp_prefix, i, beta_suffix))
 
-  # Read in genotype matrix- this is the genotype matrix for ALT and mean center
-  tp_file_path =  paste0(genos_prefix, i)
-  X <- read_genos(geno_prefix = tp_file_path, betas = betas)
+    # Flip betas to get the effect size of the ALT allele
+    betas <- betas %>% mutate(BETA_Strat = case_when(ALT == A1 ~ BETA, REF == A1 ~ -1 * BETA))
+
+    # Add betas to list
+    allBetas <- c(allBetas, betas$BETA_Strat)
+    allBetasIDs <- c(allBetasIDs, betas$ID)
+  }
+
+  # Read in Genotypes
+  X <- read_genos(genos_prefix, allBetasIDs)
 
   # Compute PGS
-  matPGS[,c] <- pgs(X, betas)
+  sscore <- pgs(X, allBetas)
 
   # Compute Va
-  vecVa[c] <- calc_Va(X, betas)
+  Va <- calc_Va(X, allBetas)
 
   # Compute Qx
-  Qx <-
+  Qx_lat <- calc_Qx(sscore, TV$latitude,  Va, lambdaT$latitude)
+  Qx_long <- calc_Qx(sscore, TV$longitude,  Va, lambdaT$longitude)
 
-  # Counter
-  c <- c + 1
+  # Generate Empirical null - Lat
+  redraws <- matrix(0, ncol = 1, nrow = num)
+  for (i in 1:num){
+    redraws[i,] <- en(allBetas, TV$latitude, Va, X, lambdaT$latitude)
+  }
+
+  # Calculate empirical p-values
+  all_strat <- redraws[,1]
+  p_strat_en_lat <- length(all_strat[all_strat > Qx_lat[1,1]])/length(all_strat)
+
+  # Generate Empirical null - Long
+  redraws <- matrix(0, ncol = 1, nrow = num)
+  for (i in 1:num){
+    redraws[i,] <- en(allBetas, TV$longitude, Va, X, lambdaT$longitude)
+  }
+
+  # Calculate empirical p-values
+  all_strat <- redraws[,1]
+  p_strat_en_long <- length(all_strat[all_strat > Qx_long[1,1]])/length(all_strat)
+
+  # Combine results
+  out <- c(Qx_lat, Qx_long, p_strat_en_lat, p_strat_en_long)
+
+  return(out)
 }
 
-# Combine chromosome
-prs <- rowSums(matPGS)
-Va <- sum(vecVa)
+# Compute Results
+out <- matrix(NA, nrow = 9, ncol =4)
+out[1, ] <- main("_v3.Height.betas")
+out[2, ] <- main("_v3.Height-Lat.betas")
+out[3, ] <- main("_v3.Height-Long.betas")
+
+# Save output
+colnames(out) <- c("Qx-Lat", "Qx-Long", "P-Lat", "P-Long")
+row.names(out) <- c("Uncorrected", "TGWAS-Lat", "TGWAS-Long")
+print(out)
+fwrite(out, outfile_qx,row.names=T,quote=F,sep="\t", col.names = T)
+
+
+# Function to just output PGS
+main2 <- function(beta_suffix) {
+
+  # Read in all estimated betas by looping through chromosomes
+  allBetasIDs <- c()
+  allBetas<- c()
+  for (i in chr_start:chr_end) {
+
+    # Read in betas
+    betas <- fread(paste0(snp_prefix, i, beta_suffix))
+
+    # Flip betas to get the effect size of the ALT allele
+    betas <- betas %>% mutate(BETA_Strat = case_when(ALT == A1 ~ BETA, REF == A1 ~ -1 * BETA))
+
+    # Add betas to list
+    allBetas <- c(allBetas, betas$BETA_Strat)
+    allBetasIDs <- c(allBetasIDs, betas$ID)
+  }
+
+  # Read in Genotypes
+  X <- read_genos(genos_prefix, allBetasIDs)
+
+  # Compute PGS
+  sscore <- pgs(X, allBetas)
+
+  return(sscore)
+}
+
+
+# Output File with all the PGS
+fam <- fread(paste0(geno_prefix, ".psam"))
+fam <- fam[,1:2]
+fam$uncorrected <- main2("_v3.Height.betas")
+fam$lat <- main2("_v3.Height-Lat.betas")
+fam$long <- main2("_v3.Height-Long.betas")
+fam$Tvec_Lat <- TV$latitude
+fam$Tvec_Long <- TV$longitude
+
+# Save output
+print(head(fam))
+fwrite(fam, outfile_pgs,row.names=F,quote=F,sep="\t", col.names = T)
+
 
 
