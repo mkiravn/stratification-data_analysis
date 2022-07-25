@@ -12,7 +12,7 @@ def get_params(x):
 
 rule all:
     input:
-        expand("{root}/data/ukbb-hgdp/hgdp/plink2-files/{dataset}/hgdp_wgs.20190516.full.pgen", root=ROOT,  chr=CHR, dataset = DATASET, pval=PVAL)
+        expand("{root}/data/ukbb-hgdp/hgdp/PCA/{dataset}/pca.eigenvec", root=ROOT,  chr=CHR, dataset = DATASET, pval=PVAL)
 
 
 
@@ -345,7 +345,7 @@ rule ascertain_snps:
 
 rule combine_hgdp_chromosomes:
     input:
-        hgdp_genos = expand("{{root}}/data/ukbb-hgdp/hgdp/plink2-files/{{dataset}}/hgdp_wgs.20190516.full.chr{chr}.psam", chr = CHR),
+        hgdp_genos = expand("{{root}}/data/ukbb-hgdp/hgdp/plink2-files/{{dataset}}/hgdp_wgs.20190516.full.chr{chr}.psam", chr = CHR)
     output:
         "{root}/data/ukbb-hgdp/hgdp/plink2-files/{dataset}/hgdp_wgs.20190516.full.psam",
         "{root}/data/ukbb-hgdp/hgdp/plink2-files/{dataset}/hgdp_wgs.20190516.full.pvar",
@@ -363,6 +363,37 @@ rule combine_hgdp_chromosomes:
         rm tmp1.txt
         rm chrs.txt
         """
+
+rule PCA:
+    input:
+        "{root}/data/ukbb-hgdp/hgdp/plink2-files/{dataset}/hgdp_wgs.20190516.full.psam",
+        "{root}/data/ukbb-hgdp/hgdp/plink2-files/{dataset}/hgdp_wgs.20190516.full.pvar",
+        "{root}/data/ukbb-hgdp/hgdp/plink2-files/{dataset}/hgdp_wgs.20190516.full.pgen"
+    output:
+        "{root}/data/ukbb-hgdp/hgdp/PCA/{dataset}/pca.eigenvec",
+        "{root}/data/ukbb-hgdp/hgdp/PCA/{dataset}/pca.eigenval"
+    params:
+        out_prefix = "{root}/data/ukbb-hgdp/hgdp/PCA/{dataset}/pca",
+        pfile_prefix = "{root}/data/ukbb-hgdp/hgdp/plink2-files/{dataset}/hgdp_wgs.20190516.full"
+    shell:
+        """
+        plink2 \
+        --pfile {params.pfile_prefix} \
+        --pca \
+        --out {params.out_prefix}
+        """
+
+rule calc_lambdaT:
+    input:
+        vecs="{root}/data/ukbb-hgdp/hgdp/PCA/{dataset}/pca.eigenvec",
+        vals="{root}/data/ukbb-hgdp/hgdp/PCA/{dataset}/pca.eigenval",
+        tvec="{root}/data/ukbb-hgdp/calculate_Tm/{dataset}/Tvec_cordinates.txt",
+    output:
+        "{root}/data/pga_test/{dataset}/Lambda_T.txt"
+    shell:
+        """
+      	Rscript code/pga_test/calc_lambdaT.R {input.vecs} {input.vals} {input.tvec} {output}
+	      """
 
 
 #rule compute_Qx:
