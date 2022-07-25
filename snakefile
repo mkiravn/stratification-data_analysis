@@ -14,7 +14,7 @@ def get_params(x):
 def get_size_minus_one(x):
   if  x == "ALL":
     out = 928
-  if x == "EUR":
+  elif x == "EUR":
     out = 154
   else:
     out = "ERROR"
@@ -22,7 +22,7 @@ def get_size_minus_one(x):
 
 rule all:
     input:
-        expand("{root}/data/ukbb-hgdp/hgdp/PCA/{dataset}/pca.eigenvec", root=ROOT,  chr=CHR, dataset = DATASET, pval=PVAL)
+        expand("{root}/data/pga_test/{dataset}/Lambda_T.txt", root=ROOT,  chr=CHR, dataset = DATASET, pval=PVAL)
 
 
 
@@ -384,7 +384,7 @@ rule PCA:
         "{root}/data/ukbb-hgdp/hgdp/PCA/{dataset}/pca.eigenval"
     params:
         out_prefix = "{root}/data/ukbb-hgdp/hgdp/PCA/{dataset}/pca",
-        pfile_prefix = "{root}/data/ukbb-hgdp/hgdp/plink2-files/{dataset}/hgdp_wgs.20190516.full"
+        pfile_prefix = "{root}/data/ukbb-hgdp/hgdp/plink2-files/{dataset}/hgdp_wgs.20190516.full",
         n_minus_1 = lambda wildcards: get_size_minus_one(wildcards.dataset)
     shell:
         """
