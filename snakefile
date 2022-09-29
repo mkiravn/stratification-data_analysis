@@ -22,7 +22,7 @@ def get_size_minus_one(x):
 
 rule all:
     input:
-        expand("/scratch/jgblanc/ukbb/plink2-files/ukb_imp_chr{chr}_v3.psam",  chr=CHR, dataset = DATASET, pval=PVAL)
+        expand("{root}/data/pga_test/{dataset}/{pval}/Qx.txt",  chr=CHR, dataset = DATASET, pval=PVAL)
 
 
 ## UKBB Genotype data processing
@@ -57,8 +57,8 @@ rule UKBB_begen_to_plink2:
 rule UKBB_freq:
     input:
         psam="/scratch/jgblanc/ukbb/plink2-files/ukb_imp_chr{chr}_v3.psam",
-        pvar="{r/ukbb/plink2-files/ukb_imp_chr{chr}_v3.pvar",
-        pgen="{root}/data/ukbb/plink2-files/ukb_imp_chr{chr}_v3.pgen"
+        pvar="/scratch/jgblanc/ukbb/plink2-files/ukb_imp_chr{chr}_v3.pvar",
+        pgen="/scratch/jgblanc/ukbb/plink2-files/ukb_imp_chr{chr}_v3.pgen"
     output:
         freq="{root}/data/ukbb/variant_freq/ukb_imp_chr{chr}_v3.afreq"
     params:
@@ -216,13 +216,13 @@ rule project_Tvec_chr:
     input:
         Tvec="{root}/data/ukbb-hgdp/calculate_Tm/{dataset}/Tvec_cordinates.txt",
         tp_genos="{root}/data/ukbb-hgdp/hgdp/plink2-files/{dataset}/hgdp_wgs.20190516.full.chr{chr}.pgen",
-        gp_genos="{root}/data/ukbb/plink2-files/ukb_imp_chr{chr}_v3.pgen",
+        gp_genos="/scratch/jgblanc/plink2-files/ukb_imp_chr{chr}_v3.pgen",
         overlap_snps="{root}/data/ukbb-hgdp/variants/{dataset}/snps_chr{chr}.txt"
     output:
         "{root}/data/ukbb-hgdp/calculate_Tm/{dataset}/Tm_{chr}.txt"
     params:
         tp_prefix = "{root}/data/ukbb-hgdp/hgdp/plink2-files/{dataset}/hgdp_wgs.20190516.full.chr{chr}",
-        gp_prefix = "{root}/data/ukbb/plink2-files/ukb_imp_chr{chr}_v3",
+        gp_prefix = "/scratch/jgblanc/plink2-files/ukb_imp_chr{chr}_v3",
         tvec_prefix = "{root}/data/ukbb-hgdp/calculate_Tm/{dataset}/Tvec",
         out_prefix = "{root}/data/ukbb-hgdp/calculate_Tm/{dataset}/"
     shell:
@@ -247,7 +247,7 @@ rule concat_chr_Tm:
 
 rule format_covars:
     input:
-        fam = "{root}/data/ukbb/plink2-files/ukb_imp_chr22_v3.psam",
+        fam = "/scratch/jgblanc/ukbb/plink2-files/ukb_imp_chr22_v3.psam",
         TGWAS = "{root}/data/ukbb-hgdp/calculate_Tm/{dataset}/TGWAS.txt",
         aar = "/gpfs/data/berg-lab/data/ukbb/phenotypes/age_at_recruitment_21022.txt",
         sex = "/gpfs/data/berg-lab/data/ukbb/phenotypes/genetic_sex_22001.txt",
@@ -261,14 +261,14 @@ rule format_covars:
 
 rule run_gwas_uncorrected:
     input:
-        genos = "{root}/data/ukbb/plink2-files/ukb_imp_chr{chr}_v3.pgen",
+        genos = "/scratch/jgblanc/ukbb/plink2-files/ukb_imp_chr{chr}_v3.pgen",
         covar = "{root}/data/ukbb-hgdp/run_gwas/{dataset}/covars.txt",
         pheno = "{root}/data/phenotypes/StandingHeight_50.txt",
 	snp_list = "{root}/data/ukbb-hgdp/variants/{dataset}/snps_chr{chr}.txt"
     output:
         "{root}/data/ukbb-hgdp/run_gwas/effect_sizes/{dataset}/ukb_imp_chr{chr}_v3.Height.glm.linear"
     params:
-        pfile = "{root}/data/ukbb/plink2-files/ukb_imp_chr{chr}_v3",
+        pfile = "/scratch/jgblanc/ukbb/plink2-files/ukb_imp_chr{chr}_v3",
         out = "{root}/data/ukbb-hgdp/run_gwas/effect_sizes/{dataset}/ukb_imp_chr{chr}_v3"
     shell:
         """
@@ -285,14 +285,14 @@ rule run_gwas_uncorrected:
 
 rule run_gwas_latitude:
     input:
-        genos = "{root}/data/ukbb/plink2-files/ukb_imp_chr{chr}_v3.pgen",
+        genos = "/scratch/jgblanc/ukbb/plink2-files/ukb_imp_chr{chr}_v3.pgen",
         covar = "{root}/data/ukbb-hgdp/run_gwas/{dataset}/covars.txt",
         pheno = "{root}/data/phenotypes/StandingHeight_50.txt",
 	snp_list = "{root}/data/ukbb-hgdp/variants/{dataset}/snps_chr{chr}.txt"
     output:
         "{root}/data/ukbb-hgdp/run_gwas/effect_sizes/{dataset}/ukb_imp_chr{chr}_v3-Lat.Height.glm.linear"
     params:
-        pfile = "{root}/data/ukbb/plink2-files/ukb_imp_chr{chr}_v3",
+        pfile = "/scratch/jgblanc/ukbb/plink2-files/ukb_imp_chr{chr}_v3",
         out = "{root}/data/ukbb-hgdp/run_gwas/effect_sizes/{dataset}/ukb_imp_chr{chr}_v3-Lat"
     shell:
         """
@@ -309,14 +309,14 @@ rule run_gwas_latitude:
 
 rule run_gwas_longitude:
     input:
-        genos = "{root}/data/ukbb/plink2-files/ukb_imp_chr{chr}_v3.pgen",
+        genos = "/scratch/jgblanc/ukbb/plink2-files/ukb_imp_chr{chr}_v3.pgen",
         covar = "{root}/data/ukbb-hgdp/run_gwas/{dataset}/covars.txt",
         pheno = "{root}/data/phenotypes/StandingHeight_50.txt",
 	      snp_list = "{root}/data/ukbb-hgdp/variants/{dataset}/snps_chr{chr}.txt"
     output:
         "{root}/data/ukbb-hgdp/run_gwas/effect_sizes/{dataset}/ukb_imp_chr{chr}_v3-Long.Height.glm.linear"
     params:
-        pfile = "{root}/data/ukbb/plink2-files/ukb_imp_chr{chr}_v3",
+        pfile = "/scratch/jgblanc/ukbb/plink2-files/ukb_imp_chr{chr}_v3",
         out = "{root}/data/ukbb-hgdp/run_gwas/effect_sizes/{dataset}/ukb_imp_chr{chr}_v3-Long"
     shell:
         """
