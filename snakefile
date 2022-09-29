@@ -1,7 +1,7 @@
 # Snakefile to run HGDP (full data) / UKBB  data analysis
-CHR =["22"]
-#for i in range(1, 23):
-#  CHR.append(str(i))
+CHR =[]
+for i in range(1, 23):
+  CHR.append(str(i))
 ROOT = ["/gpfs/data/berg-lab/jgblanc/stratification-data_analysis"]
 DATASET = ["ALL", "EUR"]
 PVAL = ["p_1", "p_5e-8"]
@@ -22,43 +22,43 @@ def get_size_minus_one(x):
 
 rule all:
     input:
-        expand("{root}/data/ukbb/variant_freq/ukb_imp_chr{chr}_v3.afreq", root=ROOT,  chr=CHR, dataset = DATASET, pval=PVAL)
+        expand("/scratch/jgblanc/ukbb/plink2-files/ukb_imp_chr{chr}_v3.psam",  chr=CHR, dataset = DATASET, pval=PVAL)
 
 
 ## UKBB Genotype data processing
 
-#rule UKBB_begen_to_plink2:
-#    input:
-#        bgen="/gpfs/data/pierce-lab/uk-biobank-genotypes/ukb_imp_chr{chr}_v3.bgen",
-#        sample="/gpfs/data/berg-lab/data/ukbb/ukb22828_c22_b0_v3_s487192.sample"
-#	      pheno_ID="data/phenotypes/StandingHeight_50_IDs.txt"
-#    output:
-#        psam="/scratch/jgblanc/ukbb/plink2-files/ukb_imp_chr{chr}_v3.psam",
-#	pvar="/scratch/jgblanc/ukbb/plink2-files/ukb_imp_chr{chr}_v3.pvar",
-#	pgen="/scratch/jgblanc/ukbb/plink2-files/ukb_imp_chr{chr}_v3.pgen"
-#    params:
-#        prefix="/scratch/jgblanc/ukbb/plink2-files/ukb_imp_chr{chr}_v3"
-#    shell:
-#        """
-#	plink2 --bgen {input.bgen} ref-first \
-#	--sample {input.sample} \
-#	--keep {input.pheno_ID} \
-#	--maf 0.01 \
-#	--rm-dup exclude-all \
-#	--snps-only \
-#	--max-alleles 2 \
-#	--make-pgen \
-#	--set-all-var-ids @:# \
-#	--threads 20 \
-#	--memory 38000 \
-#	--out {params.prefix}
-#	"""
+rule UKBB_begen_to_plink2:
+    input:
+        bgen="/gpfs/data/pierce-lab/uk-biobank-genotypes/ukb_imp_chr{chr}_v3.bgen",
+        sample="/gpfs/data/berg-lab/data/ukbb/ukb22828_c22_b0_v3_s487192.sample", ## Need to fix sample file
+	pheno_ID="data/phenotypes/StandingHeight_50_IDs.txt"
+    output:
+        psam="/scratch/jgblanc/ukbb/plink2-files/ukb_imp_chr{chr}_v3.psam",
+	pvar="/scratch/jgblanc/ukbb/plink2-files/ukb_imp_chr{chr}_v3.pvar",
+	pgen="/scratch/jgblanc/ukbb/plink2-files/ukb_imp_chr{chr}_v3.pgen"
+    params:
+        prefix="/scratch/jgblanc/ukbb/plink2-files/ukb_imp_chr{chr}_v3"
+    shell:
+        """
+	plink2 --bgen {input.bgen} ref-first \
+	--sample {input.sample} \
+	--keep {input.pheno_ID} \
+	--maf 0.01 \
+	--rm-dup exclude-all \
+	--snps-only \
+	--max-alleles 2 \
+	--make-pgen \
+	--set-all-var-ids @:# \
+	--threads 20 \
+	--memory 38000 \
+	--out {params.prefix}
+	"""
 
 rule UKBB_freq:
     input:
-        bgen="/gpfs/data/pierce-lab/uk-biobank-genotypes/ukb_imp_chr{chr}_v3.bgen",
-        sample="/gpfs/data/berg-lab/data/ukbb/ukb22828_c22_b0_v3_s487192.sample"
-	      pheno_ID="data/phenotypes/StandingHeight_50_IDs.txt"
+        psam="/scratch/jgblanc/ukbb/plink2-files/ukb_imp_chr{chr}_v3.psam",
+        pvar="{r/ukbb/plink2-files/ukb_imp_chr{chr}_v3.pvar",
+        pgen="{root}/data/ukbb/plink2-files/ukb_imp_chr{chr}_v3.pgen"
     output:
         freq="{root}/data/ukbb/variant_freq/ukb_imp_chr{chr}_v3.afreq"
     params:
@@ -66,20 +66,11 @@ rule UKBB_freq:
 	      prefix_in="{root}/data/ukbb/plink2-files/ukb_imp_chr{chr}_v3"
     shell:
         """
-        plink2 --bgen {input.bgen} ref-first \
-        --sample {input.sample} \
-	      --keep {input.pheno_ID} \
-	      --maf 0.01 \
-	      --rm-dup exclude-all \
-	      --snps-only \
-	      --max-alleles 2 \
-	      --set-all-var-ids @:# \
-	      --threads 20 \
-       --freq \
-#        --threads 8 \
-#        --memory 38000 \
-#        --out {params.prefix_out}
-#        """
+        plink2 --pfile {params.prefix_in} --freq \
+        --threads 8 \
+        --memory 38000 \
+        --out {params.prefix_out}
+        """
 
 ## HGDP genotype data processing
 
@@ -168,7 +159,7 @@ rule HGDP_freq:
 
 ## Get overlapping set of final SNPS
 
-# Right now set for 1%
+# Right now set for 5%
 rule get_overlapping_snps:
     input:
         freq_hgdp="{root}/data/hgdp/variant_freq/{dataset}/hgdp_wgs.20190516.full.chr{chr}.afreq",
@@ -199,8 +190,8 @@ rule HGDP_recode:
         """
         plink2 --pfile {params.prefix_in} \
         --extract {input.snp_list} \
-	      --ref-allele {input.snp_list} \
-	      --make-pgen \
+	--ref-allele {input.snp_list} \
+	--make-pgen \
         --out {params.prefix_out}
         """
 
@@ -225,19 +216,18 @@ rule project_Tvec_chr:
     input:
         Tvec="{root}/data/ukbb-hgdp/calculate_Tm/{dataset}/Tvec_cordinates.txt",
         tp_genos="{root}/data/ukbb-hgdp/hgdp/plink2-files/{dataset}/hgdp_wgs.20190516.full.chr{chr}.pgen",
-        gp_genos="/gpfs/data/pierce-lab/uk-biobank-genotypes/ukb_imp_chr{chr}_v3.bgen",
-        sample="/gpfs/data/berg-lab/data/ukbb/ukb22828_c22_b0_v3_s487192.sample"
-        overlap_snps="{root}/data/ukbb-hgdp/variants/{dataset}/snps_chr{chr}.txt",
-        pheno_ID="data/phenotypes/StandingHeight_50_IDs.txt"
+        gp_genos="{root}/data/ukbb/plink2-files/ukb_imp_chr{chr}_v3.pgen",
+        overlap_snps="{root}/data/ukbb-hgdp/variants/{dataset}/snps_chr{chr}.txt"
     output:
         "{root}/data/ukbb-hgdp/calculate_Tm/{dataset}/Tm_{chr}.txt"
     params:
         tp_prefix = "{root}/data/ukbb-hgdp/hgdp/plink2-files/{dataset}/hgdp_wgs.20190516.full.chr{chr}",
+        gp_prefix = "{root}/data/ukbb/plink2-files/ukb_imp_chr{chr}_v3",
         tvec_prefix = "{root}/data/ukbb-hgdp/calculate_Tm/{dataset}/Tvec",
         out_prefix = "{root}/data/ukbb-hgdp/calculate_Tm/{dataset}/"
     shell:
         """
-        Rscript code/calculate_Tm/project_Tvec_bgen_chr.R {params.tp_prefix} {input.bgen} {params.tvec_prefix} {params.out_prefix} {input.overlap_snps} {input.sample} {input.pheno_ID} {output}
+        Rscript code/calculate_Tm/project_Tvec_chr.R {params.tp_prefix} {params.gp_prefix} {params.tvec_prefix} {params.out_prefix} {input.overlap_snps} {output}
         """
 
 # Add together individal chromosomes
