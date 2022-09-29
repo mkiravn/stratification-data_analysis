@@ -1,7 +1,7 @@
 # Snakefile to run HGDP (full data) / UKBB  data analysis
-CHR =["21", "22"]
-#for i in range(1, 23):
-#  CHR.append(str(i))
+CHR =[]
+for i in range(1, 23):
+  CHR.append(str(i))
 ROOT = ["/gpfs/data/berg-lab/jgblanc/stratification-data_analysis"]
 DATASET = ["ALL", "EUR"]
 PVAL = ["p_1", "p_5e-8"]
@@ -22,8 +22,7 @@ def get_size_minus_one(x):
 
 rule all:
     input:
-        expand("{root}/data/pga_test/{dataset}/{pval}/Qx.txt", root=ROOT,  chr=CHR, dataset = DATASET, pval=PVAL)
-
+        expand("/scratch/jgblanc/ukbb/plink2-files/ukb_imp_chr{chr}_v3.psam",  chr=CHR, dataset = DATASET, pval=PVAL)
 
 
 ## UKBB Genotype data processing
@@ -31,14 +30,14 @@ rule all:
 rule UKBB_begen_to_plink2:
     input:
         bgen="/gpfs/data/pierce-lab/uk-biobank-genotypes/ukb_imp_chr{chr}_v3.bgen",
-        sample="/gpfs/data/berg-lab/data/ukbb/ukb27386_imp_v3_s487324.sample", ## Need to fix sample file
-	pheno_ID="{root}/data/phenotypes/StandingHeight_50_IDs.txt"
+        sample="/gpfs/data/berg-lab/data/ukbb/ukb22828_c22_b0_v3_s487192.sample", ## Need to fix sample file
+	pheno_ID="data/phenotypes/StandingHeight_50_IDs.txt"
     output:
-        psam="{root}/data/ukbb/plink2-files/ukb_imp_chr{chr}_v3.psam",
-	pvar="{root}/data/ukbb/plink2-files/ukb_imp_chr{chr}_v3.pvar",
-	pgen="{root}/data/ukbb/plink2-files/ukb_imp_chr{chr}_v3.pgen"
+        psam="/scratch/jgblanc/ukbb/plink2-files/ukb_imp_chr{chr}_v3.psam",
+	pvar="/scratch/jgblanc/ukbb/plink2-files/ukb_imp_chr{chr}_v3.pvar",
+	pgen="/scratch/jgblanc/ukbb/plink2-files/ukb_imp_chr{chr}_v3.pgen"
     params:
-        prefix="{root}/data/ukbb/plink2-files/ukb_imp_chr{chr}_v3"
+        prefix="/scratch/jgblanc/ukbb/plink2-files/ukb_imp_chr{chr}_v3"
     shell:
         """
 	plink2 --bgen {input.bgen} ref-first \
@@ -50,15 +49,15 @@ rule UKBB_begen_to_plink2:
 	--max-alleles 2 \
 	--make-pgen \
 	--set-all-var-ids @:# \
-	--threads 8 \
+	--threads 20 \
 	--memory 38000 \
 	--out {params.prefix}
 	"""
 
 rule UKBB_freq:
     input:
-        psam="{root}/data/ukbb/plink2-files/ukb_imp_chr{chr}_v3.psam",
-        pvar="{root}/data/ukbb/plink2-files/ukb_imp_chr{chr}_v3.pvar",
+        psam="/scratch/jgblanc/ukbb/plink2-files/ukb_imp_chr{chr}_v3.psam",
+        pvar="{r/ukbb/plink2-files/ukb_imp_chr{chr}_v3.pvar",
         pgen="{root}/data/ukbb/plink2-files/ukb_imp_chr{chr}_v3.pgen"
     output:
         freq="{root}/data/ukbb/variant_freq/ukb_imp_chr{chr}_v3.afreq"
@@ -409,9 +408,9 @@ rule calc_lambdaT:
 
 rule compute_Qx:
     input:
-        snps_uncorrected = expand("{root}/data/ukbb-hgdp/run_gwas/ascertained/{dataset}/{pval}/ukb_imp_chr{chr}_v3.Height.betas", chr = CHR),
-        snps_lat = expand("{root}/data/ukbb-hgdp/run_gwas/ascertained/{dataset}/{pval}/ukb_imp_chr{chr}_v3.Height-Lat.betas", chr=CHR),
-        snps_long = expand("{root}/data/ukbb-hgdp/run_gwas/ascertained/{dataset}/{pval}/ukb_imp_chr{chr}_v3.Height-Long.betas", chr = CHR),
+        snps_uncorrected = expand("{{root}}/data/ukbb-hgdp/run_gwas/ascertained/{{dataset}}/{{pval}}/ukb_imp_chr{chr}_v3.Height.betas", chr = CHR),
+        snps_lat = expand("{{root}}/data/ukbb-hgdp/run_gwas/ascertained/{{dataset}}/{{pval}}/ukb_imp_chr{chr}_v3.Height-Lat.betas", chr=CHR),
+        snps_long = expand("{{root}}/data/ukbb-hgdp/run_gwas/ascertained/{{dataset}}/{{pval}}/ukb_imp_chr{chr}_v3.Height-Long.betas", chr = CHR),
         Tvec = "{root}/data/ukbb-hgdp/calculate_Tm/{dataset}/Tvec_cordinates.txt",
         hgdp_genos = "{root}/data/ukbb-hgdp/hgdp/plink2-files/{dataset}/hgdp_wgs.20190516.full.psam",
         lambdaT = "{root}/data/pga_test/{dataset}/Lambda_T.txt"
@@ -420,7 +419,7 @@ rule compute_Qx:
         PGS = "{root}/data/pga_test/{dataset}/{pval}/PGS.txt"
     params:
         snp_prefix = "{root}/data/ukbb-hgdp/run_gwas/ascertained/{dataset}/{pval}/ukb_imp_chr",
-        tp_prefix = "{root}/data/ukbb-hgdp/plink2-files/{dataset}/hgdp_wgs.20190516.full"
+        tp_prefix = "{root}/data/ukbb-hgdp/hgdp/plink2-files/{dataset}/hgdp_wgs.20190516.full"
     shell:
         """
         Rscript code/pga_test/compute_Qx.R {params.snp_prefix} {params.tp_prefix} {input.Tvec} {input.lambdaT} {output.Qx} {output.PGS}

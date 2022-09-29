@@ -19,7 +19,7 @@ lambdaT_file = args[4]
 outfile_qx = args[5]
 outfile_pgs = args[6]
 
-chr_start=21
+chr_start=1
 chr_end=22
 num = 1000
 
@@ -27,6 +27,7 @@ num = 1000
 # Function to read in genotype matrix for a set of variants (counted allele is the Alternate)
 read_genos <- function(geno_prefix, betas_id) {
 
+  print(geno_prefix)
   pvar <- pgenlibr::NewPvar(paste0(geno_prefix, ".pvar"))
   d1 <- pgenlibr::NewPgen(paste0(geno_prefix, ".pgen"))
   var.ids <- betas_id
@@ -122,55 +123,67 @@ main <- function(beta_suffix) {
     # Read in betas
     betas <- fread(paste0(snp_prefix, i, beta_suffix))
 
-    # Flip betas to get the effect size of the ALT allele
-    betas <- betas %>% mutate(BETA_Strat = case_when(ALT == A1 ~ BETA, REF == A1 ~ -1 * BETA))
+    # Deal with no betas by makes zeros
+    if (nrow(betas) != 0) {
 
-    # Add betas to list
-    allBetas <- c(allBetas, betas$BETA_Strat)
-    allBetasIDs <- c(allBetasIDs, betas$ID)
+       # Flip betas to get the effect size of the ALT allele
+       betas <- betas %>% mutate(BETA_Strat = case_when(ALT == A1 ~ BETA, REF == A1 ~ -1 * BETA))
+
+       # Add betas to list
+       allBetas <- c(allBetas, betas$BETA_Strat)
+       allBetasIDs <- c(allBetasIDs, betas$ID)
+   }
   }
 
-  # Read in Genotypes
-  X <- read_genos(genos_prefix, allBetasIDs)
-
-  # Compute PGS
-  sscore <- pgs(X, allBetas)
-
-  # Compute Va
-  Va <- calc_Va(X, allBetas)
-
-  # Compute Qx
-  Qx_lat <- calc_Qx(sscore, TV$latitude,  Va, lambdaT$latitude)
-  Qx_long <- calc_Qx(sscore, TV$longitude,  Va, lambdaT$longitude)
-
-  # Generate Empirical null - Lat
-  redraws <- matrix(0, ncol = 1, nrow = num)
-  for (i in 1:num){
-    redraws[i,] <- en(allBetas, TV$latitude, Va, X, lambdaT$latitude)
+  # Deal with no SNPs
+  if (sum(allBetas) == 0) {
+     out <- c(NA, NA, NA, NA)
   }
 
-  # Calculate empirical p-values
-  all_strat <- redraws[,1]
-  p_strat_en_lat <- length(all_strat[all_strat > Qx_lat[1,1]])/length(all_strat)
+  else {
+       # Read in Genotypes
+       X <- read_genos(genos_prefix, allBetasIDs)
 
-  # Generate Empirical null - Long
-  redraws <- matrix(0, ncol = 1, nrow = num)
-  for (i in 1:num){
-    redraws[i,] <- en(allBetas, TV$longitude, Va, X, lambdaT$longitude)
-  }
+       # Compute PGS
+       sscore <- pgs(X, allBetas)
 
-  # Calculate empirical p-values
-  all_strat <- redraws[,1]
-  p_strat_en_long <- length(all_strat[all_strat > Qx_long[1,1]])/length(all_strat)
+       # Compute Va
+       Va <- calc_Va(X, allBetas)
 
-  # Combine results
-  out <- c(Qx_lat, Qx_long, p_strat_en_lat, p_strat_en_long)
+       # Compute Qx
+       Qx_lat <- calc_Qx(sscore, TV$latitude,  Va, lambdaT$latitude)
+       Qx_long <- calc_Qx(sscore, TV$longitude,  Va, lambdaT$longitude)
 
+       # Generate Empirical null - Lat
+       redraws <- matrix(0, ncol = 1, nrow = num)
+       for (i in 1:num){
+       	   redraws[i,] <- en(allBetas, TV$latitude, Va, X, lambdaT$latitude)
+       }
+
+       # Calculate empirical p-values
+       all_strat <- redraws[,1]
+       p_strat_en_lat <- length(all_strat[all_strat > Qx_lat[1,1]])/length(all_strat)
+
+       # Generate Empirical null - Long
+       redraws <- matrix(0, ncol = 1, nrow = num)
+       for (i in 1:num){
+       	   redraws[i,] <- en(allBetas, TV$longitude, Va, X, lambdaT$longitude)
+       }
+
+       # Calculate empirical p-values
+       all_strat <- redraws[,1]
+       p_strat_en_long <- length(all_strat[all_strat > Qx_long[1,1]])/length(all_strat)
+
+       # Combine results
+       out <- c(Qx_lat[1,1], Qx_long[1,1], p_strat_en_lat, p_strat_en_long)
+       }
+       
+  print(out)
   return(out)
 }
 
 # Compute Results
-out <- matrix(NA, nrow = 9, ncol =4)
+out <- matrix(NA, nrow = 3, ncol =4)
 out[1, ] <- main("_v3.Height.betas")
 out[2, ] <- main("_v3.Height-Lat.betas")
 out[3, ] <- main("_v3.Height-Long.betas")
@@ -193,26 +206,36 @@ main2 <- function(beta_suffix) {
     # Read in betas
     betas <- fread(paste0(snp_prefix, i, beta_suffix))
 
-    # Flip betas to get the effect size of the ALT allele
-    betas <- betas %>% mutate(BETA_Strat = case_when(ALT == A1 ~ BETA, REF == A1 ~ -1 * BETA))
+    # Deal with no betas by makes zeros
+    if (nrow(betas) != 0) {
 
-    # Add betas to list
-    allBetas <- c(allBetas, betas$BETA_Strat)
-    allBetasIDs <- c(allBetasIDs, betas$ID)
+       # Flip betas to get the effect size of the ALT allele
+       betas <- betas %>% mutate(BETA_Strat = case_when(ALT == A1 ~ BETA, REF == A1 ~ -1 * BETA))
+
+       # Add betas to list
+       allBetas <- c(allBetas, betas$BETA_Strat)
+       allBetasIDs <- c(allBetasIDs, betas$ID)
+   }
   }
 
-  # Read in Genotypes
-  X <- read_genos(genos_prefix, allBetasIDs)
+  # Deal with no SNPs
+  if (sum(allBetas) == 0) {
+     sscore <- rep(NA, nrow(fam))
+  }
 
-  # Compute PGS
-  sscore <- pgs(X, allBetas)
+  else {
+       # Read in Genotypes
+       X <- read_genos(genos_prefix, allBetasIDs)
 
+       # Compute PGS
+       sscore <- pgs(X, allBetas)
+  }
   return(sscore)
 }
 
 
 # Output File with all the PGS
-fam <- fread(paste0(geno_prefix, ".psam"))
+fam <- fread(paste0(genos_prefix, ".psam"))
 fam <- fam[,1:2]
 fam$uncorrected <- main2("_v3.Height.betas")
 fam$lat <- main2("_v3.Height-Lat.betas")
