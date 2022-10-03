@@ -8,7 +8,7 @@ if(length(args)<8){stop("Rscript pick_snps.R <blocks> <uncorrected betas> <lat c
 suppressWarnings(suppressMessages({
   library(data.table)
   library(dplyr)
-  #library(tidyr)
+  library(tidyr)
 }))
 
 block_file = args[1]
@@ -35,6 +35,9 @@ assign_SNP_to_block <- function(CHR, BP, block = ld_blocks) {
 
   # Assign
   block_num <- as.numeric(block_bp[,"block_number"])
+  if (length(block_num) == 0) {
+     block_num = NA
+  }
   return(block_num)
 }
 
@@ -43,8 +46,6 @@ betas_u <- fread(u_file)
 betas_lat <- fread(lat_file)
 betas_long <- fread(long_file)
 
-
-test <- betas_u %>% filter(P < pt) 
 
 # Threshold and asign all SNPs to blocks
 df_u <- betas_u %>%
@@ -60,10 +61,13 @@ df_long <- betas_long %>%
 
 # Pick the minimum p-value per block
 u <- df_u %>%
+  drop_na() %>%
   group_by(block) %>% arrange(P) %>% slice(n=1)
 lat <- df_lat %>%
+  drop_na() %>%
   group_by(block) %>% arrange(P) %>% slice(n=1)
 long <- df_long %>%
+  drop_na() %>%
   group_by(block) %>% arrange(P) %>% slice(n=1)
 
 

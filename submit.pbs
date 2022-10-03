@@ -7,13 +7,13 @@
 ########################
  
 ### Set the name of the job, where jobname is a unique name for your job
-#PBS -N test_vec
+#PBS -N proj_T
  
 ### Select the shell you would like the script to execute within
 #PBS -S /bin/bash
  
 ### Inform the scheduler of the expected runtime, where walltime=DD:HH:MM:SS
-#PBS -l walltime=00:24:00:00
+#PBS -l walltime=00:12:00:00
  
 ### Inform the scheduler of the number of CPU cores for your job.
 ### This example will allocate four cores on a single node.
@@ -21,11 +21,11 @@
  
 ### Inform the scheduler of the amount of memory you expect to use.
 ### Use units of 'b', 'kb', 'mb', or 'gb'
-#PBS -l mem=2gb
+#PBS -l mem=16gb
  
 ### Set the destination for your program's output.
-#PBS -o logs/make_plink2.out
-#PBS -e logs/make_plink2.err
+#PBS -o logs/proj_T.out
+#PBS -e logs/proj_T.err
  
 ### Change working directory to the one it was submitted from
 cd $PBS_O_WORKDIR
@@ -44,4 +44,4 @@ module load python/3.7.6
 module load R
 
 # Execute the program
-snakemake --cores all
+snakemake --cores all --rerun-incomplete

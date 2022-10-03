@@ -3,8 +3,8 @@ CHR =[]
 for i in range(1, 23):
   CHR.append(str(i))
 ROOT = ["/gpfs/data/berg-lab/jgblanc/stratification-data_analysis"]
-DATASET = ["ALL", "EUR"]
-PVAL = ["p_1", "p_5e-8"]
+DATASET = ["EUR", "ALL"]
+PVAL = ["p_5e-8"]
 
 
 def get_params(x):
@@ -22,7 +22,7 @@ def get_size_minus_one(x):
 
 rule all:
     input:
-        expand("{root}/data/pga_test/{dataset}/{pval}/Qx.txt",  chr=CHR, dataset = DATASET, pval=PVAL)
+        expand("{root}/data/ukbb-hgdp/pga_test/{dataset}/{pval}/Qx.txt", root=ROOT, chr=CHR, dataset = DATASET, pval=PVAL)
 
 
 ## UKBB Genotype data processing
@@ -63,7 +63,7 @@ rule UKBB_freq:
         freq="{root}/data/ukbb/variant_freq/ukb_imp_chr{chr}_v3.afreq"
     params:
         prefix_out="{root}/data/ukbb/variant_freq/ukb_imp_chr{chr}_v3",
-	      prefix_in="{root}/data/ukbb/plink2-files/ukb_imp_chr{chr}_v3"
+	      prefix_in="/scratch/jgblanc/ukbb/plink2-files/ukb_imp_chr{chr}_v3"
     shell:
         """
         plink2 --pfile {params.prefix_in} --freq \
@@ -199,7 +199,7 @@ rule HGDP_recode:
 
 rule make_Tvec_cordinates:
     input:
-        psam="{root}/data/ukbb-hgdp/hgdp/plink2-files/hgdp_wgs.20190516.full.chr22.psam",
+        psam="/gpfs/data/berg-lab/data/HGDP/plink2-files-hg19/hgdp_wgs.20190516.full.chr22.psam",
         populations="{root}/data/hgdp/hgdp_wgs.20190516.metadata.txt"
     output:
         "{root}/data/ukbb-hgdp/calculate_Tm/ALL/Tvec_cordinates.txt",
@@ -216,13 +216,13 @@ rule project_Tvec_chr:
     input:
         Tvec="{root}/data/ukbb-hgdp/calculate_Tm/{dataset}/Tvec_cordinates.txt",
         tp_genos="{root}/data/ukbb-hgdp/hgdp/plink2-files/{dataset}/hgdp_wgs.20190516.full.chr{chr}.pgen",
-        gp_genos="/scratch/jgblanc/plink2-files/ukb_imp_chr{chr}_v3.pgen",
+        gp_genos="/scratch/jgblanc/ukbb/plink2-files/ukb_imp_chr{chr}_v3.pgen",
         overlap_snps="{root}/data/ukbb-hgdp/variants/{dataset}/snps_chr{chr}.txt"
     output:
         "{root}/data/ukbb-hgdp/calculate_Tm/{dataset}/Tm_{chr}.txt"
     params:
         tp_prefix = "{root}/data/ukbb-hgdp/hgdp/plink2-files/{dataset}/hgdp_wgs.20190516.full.chr{chr}",
-        gp_prefix = "/scratch/jgblanc/plink2-files/ukb_imp_chr{chr}_v3",
+        gp_prefix = "/scratch/jgblanc/ukbb/plink2-files/ukb_imp_chr{chr}_v3",
         tvec_prefix = "{root}/data/ukbb-hgdp/calculate_Tm/{dataset}/Tvec",
         out_prefix = "{root}/data/ukbb-hgdp/calculate_Tm/{dataset}/"
     shell:
@@ -399,7 +399,7 @@ rule calc_lambdaT:
         vals="{root}/data/ukbb-hgdp/hgdp/PCA/{dataset}/pca.eigenval",
         tvec="{root}/data/ukbb-hgdp/calculate_Tm/{dataset}/Tvec_cordinates.txt",
     output:
-        "{root}/data/pga_test/{dataset}/Lambda_T.txt"
+        "{root}/data/ukbb-hgdp/pga_test/{dataset}/Lambda_T.txt"
     shell:
         """
       	Rscript code/pga_test/calc_lambdaT.R {input.vecs} {input.vals} {input.tvec} {output}
@@ -413,10 +413,10 @@ rule compute_Qx:
         snps_long = expand("{{root}}/data/ukbb-hgdp/run_gwas/ascertained/{{dataset}}/{{pval}}/ukb_imp_chr{chr}_v3.Height-Long.betas", chr = CHR),
         Tvec = "{root}/data/ukbb-hgdp/calculate_Tm/{dataset}/Tvec_cordinates.txt",
         hgdp_genos = "{root}/data/ukbb-hgdp/hgdp/plink2-files/{dataset}/hgdp_wgs.20190516.full.psam",
-        lambdaT = "{root}/data/pga_test/{dataset}/Lambda_T.txt"
+        lambdaT = "{root}/data/ukbb-hgdp/pga_test/{dataset}/Lambda_T.txt"
     output:
-        Qx = "{root}/data/pga_test/{dataset}/{pval}/Qx.txt",
-        PGS = "{root}/data/pga_test/{dataset}/{pval}/PGS.txt"
+        Qx = "{root}/data/ukbb-hgdp/pga_test/{dataset}/{pval}/Qx.txt",
+        PGS = "{root}/data/ukbb-hgdp/pga_test/{dataset}/{pval}/PGS.txt"
     params:
         snp_prefix = "{root}/data/ukbb-hgdp/run_gwas/ascertained/{dataset}/{pval}/ukb_imp_chr",
         tp_prefix = "{root}/data/ukbb-hgdp/hgdp/plink2-files/{dataset}/hgdp_wgs.20190516.full"

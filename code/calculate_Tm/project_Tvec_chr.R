@@ -48,6 +48,7 @@ compute_b <- function(path_to_test, path_to_gwas, path_to_testvec, test_type, ou
   #  Re-write .linear file with correct betas
   beta_plink$BETA <- betas_plink_norm
   beta_reformat <- beta_plink %>% dplyr::select(ID, A1, BETA)
+  beta_reformat[is.na(beta_reformat)] <- 0
   fwrite(beta_reformat, paste0(outpath, "xt_temp.", test_type, ".glm.linear"), sep = "\t")
 
   # Compute b

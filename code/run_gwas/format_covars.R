@@ -19,10 +19,11 @@ array = fread(args[5])
 outfile = args[6]
 
 # Format
-df <- as.data.frame(matrix(NA, nrow = nrow(TGWAS), ncol = 2))
+df <- as.data.frame(matrix(NA, nrow = nrow(fam), ncol = 2))
 colnames(df) <- c("#FID", "IID")
 df$`#FID` <- fam$`#FID`
 df$IID <- fam$IID
+head(df)
 
 # Merge Age
 colnames(aar) <- c("V1", "IID", "Age", "V2")
