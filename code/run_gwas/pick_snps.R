@@ -21,55 +21,64 @@ out_long = args[7]
 pt = as.numeric(args[8])
 print(pt)
 
+# Function to assign snps to ld blocks
+assign_SNP_to_block() <- function(betas) {
+
+  # Add new column for LD block
+  betas$block <- NA
+
+  # Get chromosome of interest
+  block_chr <- ld_blocks %>% filter(chr == as.numeric(betas$`#CHROM`[1]))
+
+  # Get first SNP actually in LD block (skips SNPs out of range at the begining)
+  if (betas$POS[1] < as.numeric(block_chr[1,2])) {
+    i <- tail(which(betas$POS < as.numeric(block_chr[1,2])),1)+1
+  } else {
+    i <- 1
+  }
+  bp <- betas$POS[i]
+
+  # Loop through LD blocks
+  for (block_num in block_chr$block_number) {
+    block_num <- as.numeric(as.character(block_num))
+    s <- as.numeric(block_chr %>% filter(block_number == block_num) %>% select(start))
+    e <- as.numeric(block_chr %>% filter(block_number == block_num) %>% select(stop))
+    betas <- betas %>% mutate(block = case_when((POS >= s & POS < e) ~ block_num, TRUE ~ as.numeric(as.character(block))))
+  }
+  return(betas)
+}
+
 # Read in block file
 ld_blocks = fread(block_file)
 
-
-# Function to assign SNPs to blocl
-assign_SNP_to_block <- function(CHR, BP, block = ld_blocks) {
-
-  # Filter blocks based on snp
-  block_chr <- block %>% filter(chr == CHR)
-  first_start <- as.numeric(block_chr[1, "start"])
-  block_bp <- block_chr %>% filter( (start < BP & stop >= BP) | BP == first_start)
-
-  # Assign
-  block_num <- as.numeric(block_bp[,"block_number"])
-  if (length(block_num) == 0) {
-     block_num = NA
-  }
-  return(block_num)
-}
-
-# Read in all betas
+# Read in all betas and convert to correct type
 betas_u <- fread(u_file)
+betas_u$P <- as.numeric(betas_u$P)
 betas_lat <- fread(lat_file)
+betas_lat$P <- as.numeric(betas_lat$P)
 betas_long <- fread(long_file)
+betas_long$P <- as.numeric(betas_long$P)
 
-
-# Threshold and asign all SNPs to blocks
+# Eliminate SNPs above p-value threshold
 df_u <- betas_u %>%
-  filter(P < pt) %>%
-  mutate(block = apply(., MARGIN = 1, FUN = function(params)assign_SNP_to_block(as.numeric(params[1]), as.numeric(params[2]))))
+  filter(P < pt)
 df_lat <- betas_lat %>%
-  filter(P < pt) %>%
-  mutate(block = apply(., MARGIN = 1, FUN = function(params)assign_SNP_to_block(as.numeric(params[1]), as.numeric(params[2]))))
+  filter(P < pt)
 df_long <- betas_long %>%
-  filter(P < pt) %>%
-  mutate(block = apply(., MARGIN = 1, FUN = function(params)assign_SNP_to_block(as.numeric(params[1]), as.numeric(params[2]))))
+  filter(P < pt)
 
+# Assign remaining SNPs to block
+df_u <- assign_SNP_to_block(df_u)
+df_lat <- assign_SNP_to_block(df_lat)
+df_long <- assign_SNP_to_block(df_long)
 
 # Pick the minimum p-value per block
 u <- df_u %>%
-  drop_na() %>%
-  group_by(block) %>% arrange(P) %>% slice(n=1)
+  drop_na() %>% group_by(block) %>% arrange(P) %>% slice(n=1)
 lat <- df_lat %>%
-  drop_na() %>%
-  group_by(block) %>% arrange(P) %>% slice(n=1)
+  drop_na() %>% group_by(block) %>% arrange(P) %>% slice(n=1)
 long <- df_long %>%
-  drop_na() %>%
-  group_by(block) %>% arrange(P) %>% slice(n=1)
-
+  drop_na() %>% group_by(block) %>% arrange(P) %>% slice(n=1)
 
 # Write to output files
 fwrite(u,out_u, row.names = F, col.names = T, quote = F, sep = "\t")

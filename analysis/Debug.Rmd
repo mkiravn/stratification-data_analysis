@@ -1,0 +1,112 @@
+---
+title: "Debug"
+author: "Jennifer Blanc"
+date: "2022-10-03"
+output: html_document
+---
+
+```{r setup, include=FALSE}
+knitr::opts_chunk$set(echo = TRUE)
+library(data.table)
+library(tidyverse)
+```
+
+# Debug Pipeline 
+
+## Computing TGWAS 
+
+ALL HGDP samples 
+```{r}
+TGWAS <- fread("../output/transfer/TGWAS.txt.gz")
+plot(TGWAS$longitude, TGWAS$latitude)
+```
+Seems like $T^{GWAS}$ is capturing structure in the UKBB
+
+## Running the GWAS 
+
+Uncorrected (chr 3)
+```{r}
+u <- fread("../output/transfer/ukb_imp_chr3_v3.Height.glm.linear.gz")
+u$P <- as.numeric(u$P) 
+plot(-1 * log10(u$P))
+abline(a = -1 * log10(5e-8), b =0, col = "red")
+```
+Corrected TGWAS-Lat
+```{r}
+lat <- fread("../output/transfer/ukb_imp_chr3_v3-Lat.Height.glm.linear.gz")
+lat$P <- as.numeric(lat$P) 
+plot(-1 * log10(lat$P))
+abline(a = -1 * log10(5e-8), b =0, col = "red")
+```
+Corrected TGWAS-Long
+```{r}
+long <- fread("../output/transfer/ukb_imp_chr3_v3-Long.Height.glm.linear.gz")
+long$P <- as.numeric(long$P) 
+plot(-1 * log10(long$P))
+abline(a = -1 * log10(5e-8), b =0, col = "red")
+```
+Check correlation
+```{r}
+plot(u$BETA,  lat$BETA)
+abline(0,1,col="red")
+cor(u$BETA, lat$BETA)
+```
+
+```{r}
+plot(u$BETA,  long$BETA)
+abline(0,1,col="red")
+cor(u$BETA, long$BETA)
+```
+
+
+## Ascertaining SNPs 
+
+```{r}
+a_u <- fread("../output/transfer/ukb_imp_chr3_v3.Height.betas.gz")
+plot(u$POS,-1 * log10(u$P))
+abline(a = -1 * log10(5e-8), b =0, col = "red")
+points(a_u$POS,-1 * log10(a_u$P), col = "red",  pch=24)
+```
+Clearly the ascertainment is not working the way I thought...test code here
+```{r}
+# Read in block file
+ld_blocks = fread("../output/transfer/fourier_ls-all_parsed.bed")
+
+# Read in all betas
+betas_u <- fread("../output/transfer/ukb_imp_chr3_v3.Height.glm.linear.gz")
+betas_u$P <- as.numeric(betas_u$P)
+
+# Set p-value threshold 
+pt <- as.numeric(5e-8)
+
+# Keep snps under threshold
+df_u <- betas_u %>%
+  filter(P < pt) 
+
+# Assign SNPs to blocks
+df_u$block <- NA
+block_chr <- ld_blocks %>% filter(chr == as.numeric(betas_u$`#CHROM`[1]))
+if (df_u$POS[1] < as.numeric(block_chr[1,2])) {
+  i <- tail(which(df_u$POS < as.numeric(block_chr[1,2])),1)+1 
+} else {
+  i <- 1
+}
+bp <- df_u$POS[i]
+for (block_num in block_chr$block_number) {
+  block_num <- as.numeric(as.character(block_num))
+  s <- as.numeric(block_chr %>% filter(block_number == block_num) %>% select(start))
+  e <- as.numeric(block_chr %>% filter(block_number == block_num) %>% select(stop))
+  df_u <- df_u %>% mutate(block = case_when((POS >= s & POS < e) ~ block_num, TRUE ~ as.numeric(as.character(block))))
+}
+
+# Pick the minimum p-value per block
+a_u <- df_u %>%
+  drop_na() %>%
+  group_by(block) %>% arrange(P) %>% slice(n=1)
+```
+
+```{r}
+plot(betas_u$POS,-1 * log10(betas_u$P))
+abline(a = -1 * log10(5e-8), b =0, col = "red")
+points(a_u$POS,-1 * log10(a_u$P), col = "red",  pch=24)
+```

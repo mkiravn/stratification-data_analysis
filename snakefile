@@ -4,7 +4,7 @@ for i in range(1, 23):
   CHR.append(str(i))
 ROOT = ["/gpfs/data/berg-lab/jgblanc/stratification-data_analysis"]
 DATASET = ["EUR", "ALL"]
-PVAL = ["p_5e-8"]
+PVAL = ["p_5e-8", "p_1"]
 
 
 def get_params(x):
@@ -22,8 +22,8 @@ def get_size_minus_one(x):
 
 rule all:
     input:
-        expand("{root}/data/ukbb-hgdp/pga_test/{dataset}/{pval}/Qx.txt", root=ROOT, chr=CHR, dataset = DATASET, pval=PVAL)
-
+        expand("{root}/data/ukbb-hgdp/run_gwas/ascertained/{dataset}/{pval}/ukb_imp_chr{chr}_v3.Height.betas", root=ROOT, chr=CHR, dataset = DATASET, pval=PVAL)
+s
 
 ## UKBB Genotype data processing
 
@@ -159,7 +159,7 @@ rule HGDP_freq:
 
 ## Get overlapping set of final SNPS
 
-# Right now set for 5%
+# Right now set for 1%
 rule get_overlapping_snps:
     input:
         freq_hgdp="{root}/data/hgdp/variant_freq/{dataset}/hgdp_wgs.20190516.full.chr{chr}.afreq",
