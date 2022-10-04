@@ -22,7 +22,7 @@ pt = as.numeric(args[8])
 print(pt)
 
 # Function to assign snps to ld blocks
-assign_SNP_to_block() <- function(betas) {
+assign_SNP_to_block <- function(betas) {
 
   # Add new column for LD block
   betas$block <- NA
@@ -58,6 +58,7 @@ betas_lat <- fread(lat_file)
 betas_lat$P <- as.numeric(betas_lat$P)
 betas_long <- fread(long_file)
 betas_long$P <- as.numeric(betas_long$P)
+print("Read in data")
 
 # Eliminate SNPs above p-value threshold
 df_u <- betas_u %>%
@@ -66,6 +67,7 @@ df_lat <- betas_lat %>%
   filter(P < pt)
 df_long <- betas_long %>%
   filter(P < pt)
+print("filtered SNPs")
 
 # Assign remaining SNPs to block
 df_u <- assign_SNP_to_block(df_u)

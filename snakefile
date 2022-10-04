@@ -23,7 +23,7 @@ def get_size_minus_one(x):
 rule all:
     input:
         expand("{root}/data/ukbb-hgdp/run_gwas/ascertained/{dataset}/{pval}/ukb_imp_chr{chr}_v3.Height.betas", root=ROOT, chr=CHR, dataset = DATASET, pval=PVAL)
-s
+
 
 ## UKBB Genotype data processing
 
