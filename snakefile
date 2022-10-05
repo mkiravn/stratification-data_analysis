@@ -22,7 +22,7 @@ def get_size_minus_one(x):
 
 rule all:
     input:
-        expand("{root}/data/ukbb-hgdp/run_gwas/ascertained/ukb_imp_all_v3.Height.betas", root=ROOT, chr=CHR, dataset = DATASET, pval=PVAL)
+        expand("{root}/data/ukbb-hgdp/run_gwas/ascertained/{dataset}/{pval}/ukb_imp_all_v3.Height.betas", root=ROOT, chr=CHR, dataset = DATASET, pval=PVAL)
 
 
 ## UKBB Genotype data processing
@@ -411,9 +411,9 @@ rule concat_ascertained_snps:
         snps_lat = expand("{{root}}/data/ukbb-hgdp/run_gwas/ascertained/{{dataset}}/{{pval}}/ukb_imp_chr{chr}_v3.Height-Lat.betas", chr=CHR),
         snps_long = expand("{{root}}/data/ukbb-hgdp/run_gwas/ascertained/{{dataset}}/{{pval}}/ukb_imp_chr{chr}_v3.Height-Long.betas", chr = CHR)
     output:
-        uncorrected = "{root}/data/ukbb-hgdp/run_gwas/ascertained/ukb_imp_all_v3.Height.betas",
-        lat = "{root}/data/ukbb-hgdp/run_gwas/ascertained/ukb_imp_all_v3.Height-Lat.betas",
-        long = "{root}/data/ukbb-hgdp/run_gwas/ascertained/ukb_imp_all_v3.Height-Long.betas"
+        uncorrected = "{root}/data/ukbb-hgdp/run_gwas/ascertained/{dataset}/{pval}/ukb_imp_all_v3.Height.betas",
+        lat = "{root}/data/ukbb-hgdp/run_gwas/ascertained/{dataset}/{pval}/ukb_imp_all_v3.Height-Lat.betas",
+        long = "{root}/data/ukbb-hgdp/run_gwas/ascertained/{dataset}/{pval}/ukb_imp_all_v3.Height-Long.betas"
     params:
         snp_prefix = "{root}/data/ukbb-hgdp/run_gwas/ascertained/{dataset}/{pval}/ukb_imp_chr"
     shell:

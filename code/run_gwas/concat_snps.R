@@ -23,7 +23,7 @@ read_betas <- function(beta_suffix) {
   for (i in 2:22) {
 
     # Read in betas
-    betas <- fread(paste0(snp_prefix, 2, beta_suffix))
+    betas <- fread(paste0(snp_prefix, i, beta_suffix))
 
     # Add to previous df
     df <- rbind(df,  betas)
