@@ -1,4 +1,4 @@
-## Pick SNPs
+## compute Qx
 ## This script reads in ascertained SNPs and the test vector and computes Qx and an empirical p-value
 
 args=commandArgs(TRUE)
@@ -177,7 +177,7 @@ main <- function(beta_suffix) {
        # Combine results
        out <- c(Qx_lat[1,1], Qx_long[1,1], p_strat_en_lat, p_strat_en_long)
        }
-       
+
   print(out)
   return(out)
 }
