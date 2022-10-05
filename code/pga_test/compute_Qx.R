@@ -3,7 +3,7 @@
 
 args=commandArgs(TRUE)
 
-if(length(args)<6){stop("Rscript compute Qx.R <prefix for ascertained snps> <test panel prefix> <test vec file> <lambdaT file> <qx outfile> <pgs outfile>   ")}
+if(length(args)<6){stop("Rscript compute Qx.R <ascertained uncorrected> <ascertained lat> <ascertained long> <test panel prefix> <test vec file> <lambdaT file> <qx outfile> <pgs outfile>   ")}
 
 suppressWarnings(suppressMessages({
   library(data.table)
@@ -12,17 +12,16 @@ suppressWarnings(suppressMessages({
   library(pgenlibr)
 }))
 
-snp_prefix = args[1]
-genos_prefix = args[2]
-tvec_file = args[3]
-lambdaT_file = args[4]
-outfile_qx = args[5]
-outfile_pgs = args[6]
+snp_u = args[1]
+snp_lat = args[2]
+snp_long = args[3]
+genos_prefix = args[4]
+tvec_file = args[5]
+lambdaT_file = args[6]
+outfile_qx = args[7]
+outfile_pgs = args[8]
 
-chr_start=1
-chr_end=22
 num = 1000
-
 
 # Function to read in genotype matrix for a set of variants (counted allele is the Alternate)
 read_genos <- function(geno_prefix, betas_id) {
@@ -113,70 +112,48 @@ TV <- fread(tvec_file)
 lambdaT <- fread(lambdaT_file)
 
 
-main <- function(beta_suffix) {
+main <- function(infile) {
 
-  # Read in all estimated betas by looping through chromosomes
-  allBetasIDs <- c()
-  allBetas<- c()
-  for (i in chr_start:chr_end) {
+  # Read in betas
+  betas <- fread(infile)
+  allBetasIDs <- betas$ID
+  allBetas <- betas$BETA_Strat
 
-    # Read in betas
-    betas <- fread(paste0(snp_prefix, i, beta_suffix))
+  # Read in Genotypes
+  X <- read_genos(genos_prefix, allBetasIDs)
 
-    # Deal with no betas by makes zeros
-    if (nrow(betas) != 0) {
+  # Compute PGS
+  sscore <- pgs(X, allBetas)
 
-       # Flip betas to get the effect size of the ALT allele
-       betas <- betas %>% mutate(BETA_Strat = case_when(ALT == A1 ~ BETA, REF == A1 ~ -1 * BETA))
+  # Compute Va
+  Va <- calc_Va(X, allBetas)
 
-       # Add betas to list
-       allBetas <- c(allBetas, betas$BETA_Strat)
-       allBetasIDs <- c(allBetasIDs, betas$ID)
-   }
+  # Compute Qx
+  Qx_lat <- calc_Qx(sscore, TV$latitude,  Va, lambdaT$latitude)
+  Qx_long <- calc_Qx(sscore, TV$longitude,  Va, lambdaT$longitude)
+
+  # Generate Empirical null - Lat
+  redraws <- matrix(0, ncol = 1, nrow = num)
+  for (i in 1:num) {
+    redraws[i,] <- en(allBetas, TV$latitude, Va, X, lambdaT$latitude)
   }
 
-  # Deal with no SNPs
-  if (sum(allBetas) == 0) {
-     out <- c(NA, NA, NA, NA)
+  # Calculate empirical p-values
+  all_strat <- redraws[,1]
+  p_strat_en_lat <- length(all_strat[all_strat > Qx_lat[1,1]])/length(all_strat)
+
+  # Generate Empirical null - Long
+  redraws <- matrix(0, ncol = 1, nrow = num)
+  for (i in 1:num){
+    redraws[i,] <- en(allBetas, TV$longitude, Va, X, lambdaT$longitude)
   }
 
-  else {
-       # Read in Genotypes
-       X <- read_genos(genos_prefix, allBetasIDs)
+  # Calculate empirical p-values
+  all_strat <- redraws[,1]
+  p_strat_en_long <- length(all_strat[all_strat > Qx_long[1,1]])/length(all_strat)
 
-       # Compute PGS
-       sscore <- pgs(X, allBetas)
-
-       # Compute Va
-       Va <- calc_Va(X, allBetas)
-
-       # Compute Qx
-       Qx_lat <- calc_Qx(sscore, TV$latitude,  Va, lambdaT$latitude)
-       Qx_long <- calc_Qx(sscore, TV$longitude,  Va, lambdaT$longitude)
-
-       # Generate Empirical null - Lat
-       redraws <- matrix(0, ncol = 1, nrow = num)
-       for (i in 1:num){
-       	   redraws[i,] <- en(allBetas, TV$latitude, Va, X, lambdaT$latitude)
-       }
-
-       # Calculate empirical p-values
-       all_strat <- redraws[,1]
-       p_strat_en_lat <- length(all_strat[all_strat > Qx_lat[1,1]])/length(all_strat)
-
-       # Generate Empirical null - Long
-       redraws <- matrix(0, ncol = 1, nrow = num)
-       for (i in 1:num){
-       	   redraws[i,] <- en(allBetas, TV$longitude, Va, X, lambdaT$longitude)
-       }
-
-       # Calculate empirical p-values
-       all_strat <- redraws[,1]
-       p_strat_en_long <- length(all_strat[all_strat > Qx_long[1,1]])/length(all_strat)
-
-       # Combine results
-       out <- c(Qx_lat[1,1], Qx_long[1,1], p_strat_en_lat, p_strat_en_long)
-       }
+  # Combine results
+  out <- c(Qx_lat[1,1], Qx_long[1,1], p_strat_en_lat, p_strat_en_long)
 
   print(out)
   return(out)
@@ -184,9 +161,9 @@ main <- function(beta_suffix) {
 
 # Compute Results
 out <- matrix(NA, nrow = 3, ncol =4)
-out[1, ] <- main("_v3.Height.betas")
-out[2, ] <- main("_v3.Height-Lat.betas")
-out[3, ] <- main("_v3.Height-Long.betas")
+out[1, ] <- main(snp_u)
+out[2, ] <- main(snp_lat)
+out[3, ] <- main(snp_long)
 
 # Save output
 colnames(out) <- c("Qx-Lat", "Qx-Long", "P-Lat", "P-Long")
@@ -196,40 +173,19 @@ fwrite(out, outfile_qx,row.names=T,quote=F,sep="\t", col.names = T)
 
 
 # Function to just output PGS
-main2 <- function(beta_suffix) {
+main2 <- function(infile) {
 
-  # Read in all estimated betas by looping through chromosomes
-  allBetasIDs <- c()
-  allBetas<- c()
-  for (i in chr_start:chr_end) {
+  # Read in betas
+  betas <- fread(infile)
+  allBetasIDs <- betas$ID
+  allBetas <- betas$BETA_Strat
 
-    # Read in betas
-    betas <- fread(paste0(snp_prefix, i, beta_suffix))
+  # Read in Genotypes
+  X <- read_genos(genos_prefix, allBetasIDs)
 
-    # Deal with no betas by makes zeros
-    if (nrow(betas) != 0) {
+  # Compute PGS
+  sscore <- pgs(X, allBetas)
 
-       # Flip betas to get the effect size of the ALT allele
-       betas <- betas %>% mutate(BETA_Strat = case_when(ALT == A1 ~ BETA, REF == A1 ~ -1 * BETA))
-
-       # Add betas to list
-       allBetas <- c(allBetas, betas$BETA_Strat)
-       allBetasIDs <- c(allBetasIDs, betas$ID)
-   }
-  }
-
-  # Deal with no SNPs
-  if (sum(allBetas) == 0) {
-     sscore <- rep(NA, nrow(fam))
-  }
-
-  else {
-       # Read in Genotypes
-       X <- read_genos(genos_prefix, allBetasIDs)
-
-       # Compute PGS
-       sscore <- pgs(X, allBetas)
-  }
   return(sscore)
 }
 
@@ -237,9 +193,9 @@ main2 <- function(beta_suffix) {
 # Output File with all the PGS
 fam <- fread(paste0(genos_prefix, ".psam"))
 fam <- fam[,1:2]
-fam$uncorrected <- main2("_v3.Height.betas")
-fam$lat <- main2("_v3.Height-Lat.betas")
-fam$long <- main2("_v3.Height-Long.betas")
+fam$uncorrected <- main2(snp_u)
+fam$lat <- main2(snp_lat)
+fam$long <- main2(snp_long)
 fam$Tvec_Lat <- TV$latitude
 fam$Tvec_Long <- TV$longitude
 
