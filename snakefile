@@ -22,7 +22,7 @@ def get_size_minus_one(x):
 
 rule all:
     input:
-        expand("{root}/data/ukbb-hgdp/run_gwas/{dataset}/covars.txt", root=ROOT, chr=CHR, dataset = DATASET, pval=PVAL)
+        expand("{root}/data/ukbb-hgdp/run_gwas/effect_sizes/{dataset}/ukb_imp_chr{chr}_v3-PCs.Height.glm.linear", root=ROOT, chr=CHR, dataset = DATASET, pval=PVAL)
 
 
 ## UKBB Genotype data processing
@@ -331,6 +331,31 @@ rule run_gwas_longitude:
         --pheno-name Height \
         --out {params.out}
         """
+
+rule run_gwas_PCs:
+    input:
+        genos = "/scratch/jgblanc/ukbb/plink2-files/ukb_imp_chr{chr}_v3.pgen",
+        covar = "{root}/data/ukbb-hgdp/run_gwas/{dataset}/covars.txt",
+        pheno = "{root}/data/phenotypes/StandingHeight_50.txt",
+	      snp_list = "{root}/data/ukbb-hgdp/variants/{dataset}/snps_chr{chr}.txt"
+    output:
+        "{root}/data/ukbb-hgdp/run_gwas/effect_sizes/{dataset}/ukb_imp_chr{chr}_v3-PCs.Height.glm.linear"
+    params:
+        pfile = "/scratch/jgblanc/ukbb/plink2-files/ukb_imp_chr{chr}_v3",
+        out = "{root}/data/ukbb-hgdp/run_gwas/effect_sizes/{dataset}/ukb_imp_chr{chr}_v3-PCs"
+    shell:
+        """
+        plink2 \
+        --pfile {params.pfile} \
+        --extract {input.snp_list} \
+        --glm hide-covar \
+        --covar {input.covar} \
+        --covar-col-nums 3-5,8-47 \
+        --pheno {input.pheno} \
+        --pheno-name Height \
+        --out {params.out}
+        """
+
 
 ## Ascertain SNPs for PGS
 
