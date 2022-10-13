@@ -22,7 +22,7 @@ def get_size_minus_one(x):
 
 rule all:
     input:
-        expand("{root}/data/ukbb-hgdp/pga_test/{dataset}/{pval}/Qx.txt", root=ROOT, chr=CHR, dataset = DATASET, pval=PVAL)
+        expand("{root}/data/ukbb-hgdp/run_gwas/{dataset}/covars.txt", root=ROOT, chr=CHR, dataset = DATASET, pval=PVAL)
 
 
 ## UKBB Genotype data processing
@@ -251,12 +251,13 @@ rule format_covars:
         TGWAS = "{root}/data/ukbb-hgdp/calculate_Tm/{dataset}/TGWAS.txt",
         aar = "/gpfs/data/berg-lab/data/ukbb/phenotypes/age_at_recruitment_21022.txt",
         sex = "/gpfs/data/berg-lab/data/ukbb/phenotypes/genetic_sex_22001.txt",
-        array = "/gpfs/data/berg-lab/data/ukbb/phenotypes/genotype_measurement_batch_22000.txt"
+        array = "/gpfs/data/berg-lab/data/ukbb/phenotypes/genotype_measurement_batch_22000.txt",
+        PCs = "/gpfs/data/berg-lab/data/ukbb/phenotypes/genetic_PC_22009.txt"
     output:
         "{root}/data/ukbb-hgdp/run_gwas/{dataset}/covars.txt"
     shell:
         """
-        Rscript code/run_gwas/format_covars.R {input.fam} {input.TGWAS} {input.aar} {input.sex} {input.array} {output}
+        Rscript code/run_gwas/format_covars.R {input.fam} {input.TGWAS} {input.aar} {input.sex} {input.array} {input.PCs} {output}
         """
 
 rule run_gwas_uncorrected:

@@ -14,6 +14,14 @@ library(pgenlibr)
 
 # Debug Pipeline 
 
+## Look at test vector 
+
+```{r}
+meta <- fread("../output/transfer/hgdp_wgs.20190516.metadata.txt")
+Tvec <- fread("../output/transfer/Tvec_cordinates.txt")
+```
+
+
 ## Computing TGWAS 
 
 ALL HGDP samples 
