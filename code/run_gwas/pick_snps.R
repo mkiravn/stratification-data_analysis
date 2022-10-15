@@ -15,10 +15,12 @@ block_file = args[1]
 u_file = args[2]
 lat_file = args[3]
 long_file = args[4]
-out_u = args[5]
-out_lat = args[6]
-out_long = args[7]
-pt = as.numeric(args[8])
+pc_file =args[5]
+out_u = args[6]
+out_lat = args[7]
+out_long = args[8]
+out_pc = args[9]
+pt = as.numeric(args[10])
 print(pt)
 
 # Function to assign snps to ld blocks
@@ -58,6 +60,8 @@ betas_lat <- fread(lat_file)
 betas_lat$P <- as.numeric(betas_lat$P)
 betas_long <- fread(long_file)
 betas_long$P <- as.numeric(betas_long$P)
+betas_pc <- fread(pc_file)
+betas_pc$P <- as.numeric(betas_pc$P)
 print("Read in data")
 
 # Eliminate SNPs above p-value threshold
@@ -67,12 +71,15 @@ df_lat <- betas_lat %>%
   filter(P < pt)
 df_long <- betas_long %>%
   filter(P < pt)
+df_pc <- betas_pc %>%
+  filter(P < pt)
 print("filtered SNPs")
 
 # Assign remaining SNPs to block
 df_u <- assign_SNP_to_block(df_u)
 df_lat <- assign_SNP_to_block(df_lat)
 df_long <- assign_SNP_to_block(df_long)
+df_pc <- assign_SNP_to_block(df_pc)
 
 # Pick the minimum p-value per block
 u <- df_u %>%
@@ -80,6 +87,8 @@ u <- df_u %>%
 lat <- df_lat %>%
   drop_na() %>% group_by(block) %>% arrange(P) %>% slice(n=1)
 long <- df_long %>%
+  drop_na() %>% group_by(block) %>% arrange(P) %>% slice(n=1)
+pc <- df_pc %>%
   drop_na() %>% group_by(block) %>% arrange(P) %>% slice(n=1)
 
 # Write to output files
@@ -89,5 +98,6 @@ fwrite(lat,out_lat, row.names = F, col.names = T, quote = F, sep = "\t")
 print("wrote latidue")
 fwrite(long,out_long, row.names = F, col.names = T, quote = F, sep = "\t")
 print("wrote longitude")
-
+fwrite(pc,out_pc, row.names = F, col.names = T, quote = F, sep = "\t")
+print("wrote PC")
 
