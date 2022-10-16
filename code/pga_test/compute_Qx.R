@@ -3,7 +3,7 @@
 
 args=commandArgs(TRUE)
 
-if(length(args)<6){stop("Rscript compute Qx.R <ascertained uncorrected> <ascertained lat> <ascertained long> <test panel prefix> <test vec file> <lambdaT file> <qx outfile> <pgs outfile>   ")}
+if(length(args)<9){stop("Rscript compute Qx.R <ascertained uncorrected> <ascertained lat> <ascertained long> <test panel prefix> <test vec file> <lambdaT file> <qx outfile> <pgs outfile>   ")}
 
 suppressWarnings(suppressMessages({
   library(data.table)
@@ -15,11 +15,12 @@ suppressWarnings(suppressMessages({
 snp_u = args[1]
 snp_lat = args[2]
 snp_long = args[3]
-genos_prefix = args[4]
-tvec_file = args[5]
-lambdaT_file = args[6]
-outfile_qx = args[7]
-outfile_pgs = args[8]
+snp_pc =args[4]
+genos_prefix = args[5]
+tvec_file = args[6]
+lambdaT_file = args[7]
+outfile_qx = args[8]
+outfile_pgs = args[9]
 
 num = 1000
 
@@ -160,10 +161,11 @@ main <- function(infile) {
 }
 
 # Compute Results
-out <- matrix(NA, nrow = 3, ncol =4)
+out <- matrix(NA, nrow = 4, ncol =4)
 out[1, ] <- main(snp_u)
 out[2, ] <- main(snp_lat)
 out[3, ] <- main(snp_long)
+out[4, ] <- main(snp_pc)
 
 # Save output
 colnames(out) <- c("Qx-Lat", "Qx-Long", "P-Lat", "P-Long")
@@ -196,6 +198,7 @@ fam <- fam[,1:2]
 fam$uncorrected <- main2(snp_u)
 fam$lat <- main2(snp_lat)
 fam$long <- main2(snp_long)
+fam$PC <- main2(snp_pc)
 fam$Tvec_Lat <- TV$latitude
 fam$Tvec_Long <- TV$longitude
 

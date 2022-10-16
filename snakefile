@@ -22,7 +22,7 @@ def get_size_minus_one(x):
 
 rule all:
     input:
-        expand("{root}/data/ukbb-hgdp/run_gwas/ascertained/{dataset}/{pval}/ukb_imp_chr{chr}_v3.Height-PCs.betas", root=ROOT, chr=CHR, dataset = DATASET, pval=PVAL)
+        expand("{root}/data/ukbb-hgdp/pga_test/{dataset}/{pval}/Qx.txt", root=ROOT, chr=CHR, dataset = DATASET, pval=PVAL)
 
 
 ## UKBB Genotype data processing
@@ -437,16 +437,18 @@ rule concat_ascertained_snps:
     input:
         snps_uncorrected = expand("{{root}}/data/ukbb-hgdp/run_gwas/ascertained/{{dataset}}/{{pval}}/ukb_imp_chr{chr}_v3.Height.betas", chr = CHR),
         snps_lat = expand("{{root}}/data/ukbb-hgdp/run_gwas/ascertained/{{dataset}}/{{pval}}/ukb_imp_chr{chr}_v3.Height-Lat.betas", chr=CHR),
-        snps_long = expand("{{root}}/data/ukbb-hgdp/run_gwas/ascertained/{{dataset}}/{{pval}}/ukb_imp_chr{chr}_v3.Height-Long.betas", chr = CHR)
+        snps_long = expand("{{root}}/data/ukbb-hgdp/run_gwas/ascertained/{{dataset}}/{{pval}}/ukb_imp_chr{chr}_v3.Height-Long.betas", chr = CHR),
+        snps_PCs = expand("{{root}}/data/ukbb-hgdp/run_gwas/ascertained/{{dataset}}/{{pval}}/ukb_imp_chr{chr}_v3.Height-PCs.betas", chr = CHR)
     output:
         uncorrected = "{root}/data/ukbb-hgdp/run_gwas/ascertained/{dataset}/{pval}/ukb_imp_all_v3.Height.betas",
         lat = "{root}/data/ukbb-hgdp/run_gwas/ascertained/{dataset}/{pval}/ukb_imp_all_v3.Height-Lat.betas",
-        long = "{root}/data/ukbb-hgdp/run_gwas/ascertained/{dataset}/{pval}/ukb_imp_all_v3.Height-Long.betas"
+        long = "{root}/data/ukbb-hgdp/run_gwas/ascertained/{dataset}/{pval}/ukb_imp_all_v3.Height-Long.betas",
+        PCs = "{root}/data/ukbb-hgdp/run_gwas/ascertained/{dataset}/{pval}/ukb_imp_all_v3.Height-PCs.betas"
     params:
         snp_prefix = "{root}/data/ukbb-hgdp/run_gwas/ascertained/{dataset}/{pval}/ukb_imp_chr"
     shell:
         """
-        Rscript code/run_gwas/concat_snps.R {params.snp_prefix} {output.uncorrected} {output.lat} {output.long}
+        Rscript code/run_gwas/concat_snps.R {params.snp_prefix} {output.uncorrected} {output.lat} {output.long} {output.PCs}
         """
 
 
@@ -455,6 +457,7 @@ rule compute_Qx:
         snps_uncorrected = "{root}/data/ukbb-hgdp/run_gwas/ascertained/{dataset}/{pval}/ukb_imp_all_v3.Height.betas",
         snps_lat = "{root}/data/ukbb-hgdp/run_gwas/ascertained/{dataset}/{pval}/ukb_imp_all_v3.Height-Lat.betas",
         snps_long = "{root}/data/ukbb-hgdp/run_gwas/ascertained/{dataset}/{pval}/ukb_imp_all_v3.Height-Long.betas",
+        snps_PCs = "{root}/data/ukbb-hgdp/run_gwas/ascertained/{dataset}/{pval}/ukb_imp_all_v3.Height-PCs.betas",
         Tvec = "{root}/data/ukbb-hgdp/calculate_Tm/{dataset}/Tvec_cordinates.txt",
         hgdp_genos = "{root}/data/ukbb-hgdp/hgdp/plink2-files/{dataset}/hgdp_wgs.20190516.full.psam",
         lambdaT = "{root}/data/ukbb-hgdp/pga_test/{dataset}/Lambda_T.txt"
@@ -466,6 +469,6 @@ rule compute_Qx:
         tp_prefix = "{root}/data/ukbb-hgdp/hgdp/plink2-files/{dataset}/hgdp_wgs.20190516.full"
     shell:
         """
-        Rscript code/pga_test/compute_Qx.R {input.snps_uncorrected} {input.snps_lat} {input.snps_long} {params.tp_prefix} {input.Tvec} {input.lambdaT} {output.Qx} {output.PGS}
+        Rscript code/pga_test/compute_Qx.R {input.snps_uncorrected} {input.snps_lat} {input.snps_long} {input.snps_PCs} {params.tp_prefix} {input.Tvec} {input.lambdaT} {output.Qx} {output.PGS}
         """
 

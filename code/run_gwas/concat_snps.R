@@ -3,7 +3,7 @@
 
 args=commandArgs(TRUE)
 
-if(length(args)<4){stop("Rscript concat_snps.R <prefix for ascertained snps> <outfile>")}
+if(length(args)<5){stop("Rscript concat_snps.R <prefix for ascertained snps> <outfile>")}
 
 suppressWarnings(suppressMessages({
   library(data.table)
@@ -14,6 +14,7 @@ snp_prefix = args[1]
 outfile_u = args[2]
 outfile_lat = args[3]
 outfile_long = args[4]
+outfile_PCs = args[5]
 
 read_betas <- function(beta_suffix) {
 
@@ -41,10 +42,12 @@ read_betas <- function(beta_suffix) {
 df_u <- read_betas("_v3.Height.betas")
 df_lat <- read_betas("_v3.Height-Lat.betas")
 df_long <- read_betas("_v3.Height-Long.betas")
+df_PCs <- read_betas("_v3.Height-PCs.betas")
 
 # Write files
 fwrite(df_u, outfile_u,row.names=F,quote=F,sep="\t", col.names = T)
 fwrite(df_lat, outfile_lat,row.names=F,quote=F,sep="\t", col.names = T)
 fwrite(df_long, outfile_long,row.names=F,quote=F,sep="\t", col.names = T)
+fwrite(df_PCs, outfile_PCs,row.names=F,quote=F,sep="\t", col.names = T)
 
 
