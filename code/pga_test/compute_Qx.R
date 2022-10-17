@@ -169,7 +169,7 @@ out[4, ] <- main(snp_pc)
 
 # Save output
 colnames(out) <- c("Qx-Lat", "Qx-Long", "P-Lat", "P-Long")
-row.names(out) <- c("Uncorrected", "TGWAS-Lat", "TGWAS-Long")
+row.names(out) <- c("Uncorrected", "TGWAS-Lat", "TGWAS-Long", "PC")
 print(out)
 fwrite(out, outfile_qx,row.names=T,quote=F,sep="\t", col.names = T)
 
