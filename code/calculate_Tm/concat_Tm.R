@@ -29,8 +29,8 @@ for (i in 2:length(chrs)) {
 
 }
 
-df$latitude <- scale(df$latitude)
-df$longitude <- scale(df$longitude)
+#df$latitude <- scale(df$latitude)
+#df$longitude <- scale(df$longitude)
 
 # Save output
 fwrite(df, outfile, row.names = F, col.names = T, quote = F, sep = "\t")

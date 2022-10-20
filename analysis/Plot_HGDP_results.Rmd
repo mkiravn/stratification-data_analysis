@@ -1,0 +1,62 @@
+---
+title: "Plot_HGDP_results"
+author: "Jennifer Blanc"
+date: "2022-10-17"
+output: html_document
+---
+
+```{r setup, include=FALSE}
+knitr::opts_chunk$set(echo = TRUE)
+library(tidyverse)
+```
+
+## HGDP EUR, p=5e-8
+
+```{r}
+q <- fread("../output/transfer/Qx.txt")
+q$V1 <- c("Uncorrected", "TGWAS-Lat", "TGWAS-Long", "PC")
+q
+```
+
+```{r}
+pgs <- fread("../output/transfer/PGS.txt")
+pop <- fread("../output/transfer/hgdp_wgs.20190516.metadata.txt")
+
+df <- inner_join(pgs, pop, by = c("#IID" = "sample")) %>% select("#IID", uncorrected, lat, long, PC, Tvec_Lat, Tvec_Long, population, latitude, longitude)
+df_melt <- df %>% pivot_longer(cols = c("uncorrected", "lat", "long", "PC")) 
+
+# Latitude 
+cbPalette <- c("#999999", "#E69F00", "#56B4E9", "#009E73", "#F0E442", "#0072B2", "#D55E00", "#CC79A7")
+ggplot(data = df_melt, aes(x = latitude, y = value)) + geom_point(aes(color = population)) + geom_smooth(method='lm', se = FALSE, color = "black", linetype = "twodash", size =0.5) + facet_wrap(~name) +  theme_bw() + xlab("Latitude") + ylab("Height PGS")+  scale_color_manual(values=cbPalette)
+
+# Longitude
+ggplot(data = df_melt, aes(x = longitude, y = value)) + geom_point(aes(color = population)) + geom_smooth(method='lm', se = FALSE, color = "black", linetype = "twodash", size =0.5) + facet_wrap(~name) +  theme_bw() + xlab("Longitude") + ylab("Height PGS")+  scale_color_manual(values=cbPalette)
+```
+
+```{r}
+ggplot(data = df, aes(x = longitude, y = latitude, col = population)) + geom_point()
+```
+
+
+```{r}
+betas_uc <- fread("../output/transfer/ukb_imp_all_v3.Height.betas")
+betas_lat <- fread("../output/transfer/ukb_imp_all_v3.Height-Lat.betas")
+betas_PC <- fread("../output/transfer/ukb_imp_all_v3.Height-PCs.betas")
+
+blocks <- betas_PC$block
+
+b_lat <-  subset(betas_lat, betas_lat$block %in% blocks)
+b_uc <- subset(betas_uc, betas_uc$ block %in% blocks)
+
+plot(betas_PC$BETA_Strat, b_lat$BETA_Strat)
+plot(betas_PC$BETA_Strat, b_uc$BETA_Strat)
+plot(b_uc$BETA_Strat, b_lat$BETA_Strat)
+```
+
+
+
+
+
+
+
+

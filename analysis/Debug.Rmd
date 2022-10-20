@@ -18,7 +18,7 @@ library(pgenlibr)
 
 ```{r}
 df <- fread("~/Downloads/genetic_PC_22009.txt.gz")
-small <- df[1:1000,  ]
+small <- df[1:100,]
 
 plot(df$`22009-0.2`, df$`22009-0.3`)
 ```
@@ -40,6 +40,11 @@ TGWAS <- fread("../output/transfer/TGWAS.txt.gz")
 plot(TGWAS$longitude, TGWAS$latitude)
 ```
 Seems like $T^{GWAS}$ is capturing structure in the UKBB
+
+```{r}
+x <- lm(TGWAS$latitude ~ as.matrix(df[,3:43]))
+```
+
 
 ## Running the GWAS 
 

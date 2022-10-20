@@ -3,8 +3,8 @@ CHR =[]
 for i in range(1, 23):
   CHR.append(str(i))
 ROOT = ["/gpfs/data/berg-lab/jgblanc/stratification-data_analysis"]
-DATASET = ["EUR", "ALL"]
-PVAL = ["p_5e-8", "p_1"]
+DATASET = ["EUR"]
+PVAL = ["p_1"]
 
 
 def get_params(x):
@@ -22,7 +22,7 @@ def get_size_minus_one(x):
 
 rule all:
     input:
-        expand("{root}/data/ukbb-hgdp/pga_test/{dataset}/{pval}/Qx.txt", root=ROOT, chr=CHR, dataset = DATASET, pval=PVAL)
+        expand("{root}/data/ukbb-hgdp/run_gwas/{dataset}/covars.txt", root=ROOT, chr=CHR, dataset = DATASET, pval=PVAL)
 
 
 ## UKBB Genotype data processing
