@@ -104,8 +104,6 @@ en <- function(betas, tvec, Va, X, lambda_T) {
   return(Qx)
 }
 
-
-
 # Load in Test vectors
 TV <- fread(tvec_file)
 

@@ -22,7 +22,7 @@ def get_size_minus_one(x):
 
 rule all:
     input:
-        expand("{root}/data/ukbb-hgdp/run_gwas/{dataset}/covars.txt", root=ROOT, chr=CHR, dataset = DATASET, pval=PVAL)
+        expand("{root}/data/ukbb-hgdp/pga_test/{dataset}/{pval}/Qx.txt", root=ROOT, chr=CHR, dataset = DATASET, pval=PVAL)
 
 
 ## UKBB Genotype data processing
