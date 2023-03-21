@@ -1,0 +1,210 @@
+# Snakefile
+CHR =[]
+for i in range(1, 23):
+  CHR.append(str(i))
+ROOT = ["/gpfs/data/berg-lab/jgblanc/stratification-data_analysis"]
+#DATASET = ["EUR"]
+#PVAL = ["p_1"]
+
+
+def get_params(x):
+  out = x.split("_")[1]
+  return out
+
+
+
+rule all:
+    input:
+        expand("{root}/data/ukbb-hgdp/pga_test/{dataset}/{pval}/Qx.txt", root=ROOT, chr=CHR, dataset = DATASET, pval=PVAL)
+
+
+## UKBB Genotype data processing
+
+rule UKBB_begen_to_plink2:
+    input:
+        bgen="/gpfs/data/pierce-lab/uk-biobank-genotypes/ukb_imp_chr{chr}_v3.bgen",
+        sample="/gpfs/data/berg-lab/data/ukbb/ukb22828_c22_b0_v3_s487192.sample",
+	pheno_ID="data/phenotypes/StandingHeight_50_IDs.txt"
+    output:
+        psam="/scratch/jgblanc/ukbb/plink2-files/ukb_imp_chr{chr}_v3.psam",
+	pvar="/scratch/jgblanc/ukbb/plink2-files/ukb_imp_chr{chr}_v3.pvar",
+	pgen="/scratch/jgblanc/ukbb/plink2-files/ukb_imp_chr{chr}_v3.pgen"
+    params:
+        prefix="/scratch/jgblanc/ukbb/plink2-files/ukb_imp_chr{chr}_v3"
+    shell:
+        """
+	plink2 --bgen {input.bgen} ref-first \
+	--sample {input.sample} \
+	--keep {input.pheno_ID} \
+	--maf 0.01 \
+	--rm-dup exclude-all \
+	--snps-only \
+	--max-alleles 2 \
+	--make-pgen \
+	--set-all-var-ids @:# \
+	--threads 20 \
+	--memory 38000 \
+	--out {params.prefix}
+	"""
+
+rule UKBB_freq:
+    input:
+        psam="/scratch/jgblanc/ukbb/plink2-files/ukb_imp_chr{chr}_v3.psam",
+        pvar="/scratch/jgblanc/ukbb/plink2-files/ukb_imp_chr{chr}_v3.pvar",
+        pgen="/scratch/jgblanc/ukbb/plink2-files/ukb_imp_chr{chr}_v3.pgen"
+    output:
+        freq="{root}/data/ukbb/variant_freq/ukb_imp_chr{chr}_v3.afreq"
+    params:
+        prefix_out="{root}/data/ukbb/variant_freq/ukb_imp_chr{chr}_v3",
+	      prefix_in="/scratch/jgblanc/ukbb/plink2-files/ukb_imp_chr{chr}_v3"
+    shell:
+        """
+        plink2 --pfile {params.prefix_in} --freq \
+        --threads 8 \
+        --memory 38000 \
+        --out {params.prefix_out}
+        """
+
+### Data processing for SDS (polarize to match UKBB), get frequency and filter
+
+## Get overlapping set of final SNPS
+
+# Right now set for 1%
+rule get_overlapping_snps:
+    input:
+        freq_hgdp="{root}/data/hgdp/variant_freq/{dataset}/hgdp_wgs.20190516.full.chr{chr}.afreq",
+	freq_ukbb="{root}/data/ukbb/variant_freq/ukb_imp_chr{chr}_v3.afreq"
+    output:
+        "{root}/data/ukbb-hgdp/variants/{dataset}/snps_chr{chr}.txt"
+    shell:
+        """
+        Rscript code/genotypes/overlapping_snps.R {input.freq_ukbb} {input.freq_hgdp} {output}
+        """
+
+## Compute TGWAS
+
+# Each chromosome individually
+rule project_Tvec_chr:
+    input:
+        Tvec="{root}/data/ukbb-hgdp/calculate_Tm/{dataset}/Tvec_cordinates.txt",
+        tp_genos="{root}/data/ukbb-hgdp/hgdp/plink2-files/{dataset}/hgdp_wgs.20190516.full.chr{chr}.pgen",
+        gp_genos="/scratch/jgblanc/ukbb/plink2-files/ukb_imp_chr{chr}_v3.pgen",
+        overlap_snps="{root}/data/ukbb-hgdp/variants/{dataset}/snps_chr{chr}.txt"
+    output:
+        "{root}/data/ukbb-hgdp/calculate_Tm/{dataset}/Tm_{chr}.txt"
+    params:
+        tp_prefix = "{root}/data/ukbb-hgdp/hgdp/plink2-files/{dataset}/hgdp_wgs.20190516.full.chr{chr}",
+        gp_prefix = "/scratch/jgblanc/ukbb/plink2-files/ukb_imp_chr{chr}_v3",
+        tvec_prefix = "{root}/data/ukbb-hgdp/calculate_Tm/{dataset}/Tvec",
+        out_prefix = "{root}/data/ukbb-hgdp/calculate_Tm/{dataset}/"
+    shell:
+        """
+        Rscript code/calculate_Tm/project_Tvec_chr.R {params.tp_prefix} {params.gp_prefix} {params.tvec_prefix} {params.out_prefix} {input.overlap_snps} {output}
+        """
+
+# Add together individal chromosomes
+rule concat_chr_Tm:
+    input:
+        expand("{root}/data/ukbb-hgdp/calculate_Tm/{dataset}/Tm_{chr}.txt", chr = CHR, root=ROOT, dataset = DATASET)
+    output:
+        "{root}/data/ukbb-hgdp/calculate_Tm/{dataset}/TGWAS.txt"
+    params:
+        chromosomes = CHR
+    shell:
+        """
+        Rscript code/calculate_Tm/concat_Tm.R {wildcards.root}/data/ukbb-hgdp/calculate_Tm/{wildcards.dataset}/Tm {output} {params.chromosomes}
+        """
+
+## Run GWAS
+
+rule format_covars:
+    input:
+        fam = "/scratch/jgblanc/ukbb/plink2-files/ukb_imp_chr22_v3.psam",
+        TGWAS = "{root}/data/ukbb-hgdp/calculate_Tm/{dataset}/TGWAS.txt",
+        aar = "/gpfs/data/berg-lab/data/ukbb/phenotypes/age_at_recruitment_21022.txt",
+        sex = "/gpfs/data/berg-lab/data/ukbb/phenotypes/genetic_sex_22001.txt",
+        array = "/gpfs/data/berg-lab/data/ukbb/phenotypes/genotype_measurement_batch_22000.txt",
+        PCs = "/gpfs/data/berg-lab/data/ukbb/phenotypes/genetic_PC_22009.txt"
+    output:
+        "{root}/data/ukbb-hgdp/run_gwas/{dataset}/covars.txt"
+    shell:
+        """
+        Rscript code/run_gwas/format_covars.R {input.fam} {input.TGWAS} {input.aar} {input.sex} {input.array} {input.PCs} {output}
+        """
+
+rule run_gwas_uncorrected:
+    input:
+        genos = "/scratch/jgblanc/ukbb/plink2-files/ukb_imp_chr{chr}_v3.pgen",
+        covar = "{root}/data/ukbb-hgdp/run_gwas/{dataset}/covars.txt",
+        pheno = "{root}/data/phenotypes/StandingHeight_50.txt",
+	snp_list = "{root}/data/ukbb-hgdp/variants/{dataset}/snps_chr{chr}.txt"
+    output:
+        "{root}/data/ukbb-hgdp/run_gwas/effect_sizes/{dataset}/ukb_imp_chr{chr}_v3.Height.glm.linear"
+    params:
+        pfile = "/scratch/jgblanc/ukbb/plink2-files/ukb_imp_chr{chr}_v3",
+        out = "{root}/data/ukbb-hgdp/run_gwas/effect_sizes/{dataset}/ukb_imp_chr{chr}_v3"
+    shell:
+        """
+        plink2 \
+        --pfile {params.pfile} \
+	--extract {input.snp_list} \
+        --glm hide-covar \
+        --covar {input.covar} \
+        --covar-col-nums 3-5 \
+        --pheno {input.pheno} \
+        --pheno-name Height \
+        --out {params.out}
+        """
+
+
+### Rule to just include FGr
+
+
+rule run_gwas_PCs:
+    input:
+        genos = "/scratch/jgblanc/ukbb/plink2-files/ukb_imp_chr{chr}_v3.pgen",
+        covar = "{root}/data/ukbb-hgdp/run_gwas/{dataset}/covars.txt",
+        pheno = "{root}/data/phenotypes/StandingHeight_50.txt",
+	      snp_list = "{root}/data/ukbb-hgdp/variants/{dataset}/snps_chr{chr}.txt"
+    output:
+        "{root}/data/ukbb-hgdp/run_gwas/effect_sizes/{dataset}/ukb_imp_chr{chr}_v3-PCs.Height.glm.linear"
+    params:
+        pfile = "/scratch/jgblanc/ukbb/plink2-files/ukb_imp_chr{chr}_v3",
+        out = "{root}/data/ukbb-hgdp/run_gwas/effect_sizes/{dataset}/ukb_imp_chr{chr}_v3-PCs"
+    shell:
+        """
+        plink2 \
+        --pfile {params.pfile} \
+        --extract {input.snp_list} \
+        --glm hide-covar \
+        --covar {input.covar} \
+        --covar-col-nums 3-5,8-47 \
+        --pheno {input.pheno} \
+        --pheno-name Height \
+        --out {params.out}
+        """
+
+
+## Ascertain SNPs for PGS
+
+#### replace this with clumping
+rule ascertain_snps:
+    input:
+        betas_uncorrected = "{root}/data/ukbb-hgdp/run_gwas/effect_sizes/{dataset}/ukb_imp_chr{chr}_v3.Height.glm.linear",
+        betas_lat = "{root}/data/ukbb-hgdp/run_gwas/effect_sizes/{dataset}/ukb_imp_chr{chr}_v3-Lat.Height.glm.linear",
+        betas_long= "{root}/data/ukbb-hgdp/run_gwas/effect_sizes/{dataset}/ukb_imp_chr{chr}_v3-Long.Height.glm.linear",
+        betas_PCs = "{root}/data/ukbb-hgdp/run_gwas/effect_sizes/{dataset}/ukb_imp_chr{chr}_v3-PCs.Height.glm.linear",
+        block = "{root}/data/LD_blocks/fourier_ls-all_parsed.bed"
+    output:
+        snps_uncorrected = "{root}/data/ukbb-hgdp/run_gwas/ascertained/{dataset}/{pval}/ukb_imp_chr{chr}_v3.Height.betas",
+        snps_lat = "{root}/data/ukbb-hgdp/run_gwas/ascertained/{dataset}/{pval}/ukb_imp_chr{chr}_v3.Height-Lat.betas",
+        snps_long = "{root}/data/ukbb-hgdp/run_gwas/ascertained/{dataset}/{pval}/ukb_imp_chr{chr}_v3.Height-Long.betas",
+        snps_PCs = "{root}/data/ukbb-hgdp/run_gwas/ascertained/{dataset}/{pval}/ukb_imp_chr{chr}_v3.Height-PCs.betas"
+    params:
+        pt = lambda wildcards: get_params(wildcards.pval)
+    shell:
+        """
+        Rscript code/run_gwas/pick_snps.R {input.block} {input.betas_uncorrected} {input.betas_lat} {input.betas_long} {input.betas_PCs} {output.snps_uncorrected} {output.snps_lat} {output.snps_long} {output.snps_PCs} {params.pt}
+        """
+
+
