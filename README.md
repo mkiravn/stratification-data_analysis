@@ -1,7 +1,5 @@
 # stratification-data_analysis
 
-A [workflowr][] project.
+## Marida's branch for her rotation project
 
-[workflowr]: https://github.com/jdblischak/workflowr
-
-TEST
+Goal: protect GWAS from stratification, see whether we see signal in SDS.
