@@ -2,9 +2,10 @@
 CHR =[]
 for i in range(1, 23):
   CHR.append(str(i))
-ROOT = ["/gpfs/data/berg-lab/jgblanc/stratification-data_analysis"]
+ROOT = ["/gpfs/data/berg-lab/mianniravn/stratification-data_analysis"]
 #DATASET = ["EUR"]
 #PVAL = ["p_1"]
+SCRATCH = ["/scratch/mianniravn/stratificatio-data_analysisn"]
 
 
 def get_params(x):
@@ -26,11 +27,11 @@ rule UKBB_begen_to_plink2:
         sample="/gpfs/data/berg-lab/data/ukbb/ukb22828_c22_b0_v3_s487192.sample",
 	pheno_ID="data/phenotypes/StandingHeight_50_IDs.txt"
     output:
-        psam="/scratch/jgblanc/ukbb/plink2-files/ukb_imp_chr{chr}_v3.psam",
-	pvar="/scratch/jgblanc/ukbb/plink2-files/ukb_imp_chr{chr}_v3.pvar",
-	pgen="/scratch/jgblanc/ukbb/plink2-files/ukb_imp_chr{chr}_v3.pgen"
+        psam="{scratch}/ukbb/plink2-files/ukb_imp_chr{chr}_v3.psam",
+	pvar="{scratch}/ukbb/plink2-files/ukb_imp_chr{chr}_v3.pvar",
+	pgen="{scratch}/ukbb/plink2-files/ukb_imp_chr{chr}_v3.pgen"
     params:
-        prefix="/scratch/jgblanc/ukbb/plink2-files/ukb_imp_chr{chr}_v3"
+        prefix="{scratch}/ukbb/plink2-files/ukb_imp_chr{chr}_v3"
     shell:
         """
 	plink2 --bgen {input.bgen} ref-first \
@@ -49,14 +50,14 @@ rule UKBB_begen_to_plink2:
 
 rule UKBB_freq:
     input:
-        psam="/scratch/jgblanc/ukbb/plink2-files/ukb_imp_chr{chr}_v3.psam",
-        pvar="/scratch/jgblanc/ukbb/plink2-files/ukb_imp_chr{chr}_v3.pvar",
-        pgen="/scratch/jgblanc/ukbb/plink2-files/ukb_imp_chr{chr}_v3.pgen"
+        psam="{scratch}/ukbb/plink2-files/ukb_imp_chr{chr}_v3.psam",
+        pvar="{scratch}/ukbb/plink2-files/ukb_imp_chr{chr}_v3.pvar",
+        pgen="{scratch}/ukbb/plink2-files/ukb_imp_chr{chr}_v3.pgen"
     output:
         freq="{root}/data/ukbb/variant_freq/ukb_imp_chr{chr}_v3.afreq"
     params:
         prefix_out="{root}/data/ukbb/variant_freq/ukb_imp_chr{chr}_v3",
-	      prefix_in="/scratch/jgblanc/ukbb/plink2-files/ukb_imp_chr{chr}_v3"
+	    prefix_in="{scratch}/ukbb/plink2-files/ukb_imp_chr{chr}_v3"
     shell:
         """
         plink2 --pfile {params.prefix_in} --freq \
@@ -67,18 +68,32 @@ rule UKBB_freq:
 
 ### Data processing for SDS (polarize to match UKBB), get frequency and filter
 
+# if polarisation matches, do nothing; otherwise switch sign
+# needs an R script
+rule polarise_sds:
+    input:
+        sds=<sds_file>,
+        ukbb="{root}/data/ukbb/variant_freq/ukb_imp_chr{chr}_v3.pgen",
+    output:
+        polarised_sds=<output path>
+    shell:
+        """
+        Rscript code/genotypes/polarise_SDS.R {input.sds} {input.ubkk} {output} 
+        """ 
 ## Get overlapping set of final SNPS
 
-# Right now set for 1%
+# Right now set for 1% - could make this a wildcard
+# changed to also include sds
 rule get_overlapping_snps:
     input:
         freq_hgdp="{root}/data/hgdp/variant_freq/{dataset}/hgdp_wgs.20190516.full.chr{chr}.afreq",
-	freq_ukbb="{root}/data/ukbb/variant_freq/ukb_imp_chr{chr}_v3.afreq"
+	    freq_ukbb="{root}/data/ukbb/variant_freq/ukb_imp_chr{chr}_v3.afreq",
+        freq_sds=<put in file. should be output of previous rule.>
     output:
-        "{root}/data/ukbb-hgdp/variants/{dataset}/snps_chr{chr}.txt"
+        "{root}/data/ukbb-hgdp/variants/{dataset}-sds/snps_chr{chr}.txt"
     shell:
         """
-        Rscript code/genotypes/overlapping_snps.R {input.freq_ukbb} {input.freq_hgdp} {output}
+        Rscript code/genotypes/overlapping_snps_SDS.R {input.freq_ukbb} {input.freq_hgdp} {input.freq_sds} {output} 
         """
 
 ## Compute TGWAS
@@ -86,18 +101,18 @@ rule get_overlapping_snps:
 # Each chromosome individually
 rule project_Tvec_chr:
     input:
-        Tvec="{root}/data/ukbb-hgdp/calculate_Tm/{dataset}/Tvec_cordinates.txt",
+        Tvec="{root}/data/ukbb-hgdp/calculate_Tm/{dataset}/Tvec_cordinates.txt", # is this where the sds goes?
         tp_genos="{root}/data/ukbb-hgdp/hgdp/plink2-files/{dataset}/hgdp_wgs.20190516.full.chr{chr}.pgen",
-        gp_genos="/scratch/jgblanc/ukbb/plink2-files/ukb_imp_chr{chr}_v3.pgen",
-        overlap_snps="{root}/data/ukbb-hgdp/variants/{dataset}/snps_chr{chr}.txt"
+        gp_genos="{scratch}/ukbb/plink2-files/ukb_imp_chr{chr}_v3.pgen",
+        overlap_snps="{root}/data/ukbb-hgdp/variants/{dataset}-sds/snps_chr{chr}.txt"
     output:
         "{root}/data/ukbb-hgdp/calculate_Tm/{dataset}/Tm_{chr}.txt"
     params:
         tp_prefix = "{root}/data/ukbb-hgdp/hgdp/plink2-files/{dataset}/hgdp_wgs.20190516.full.chr{chr}",
-        gp_prefix = "/scratch/jgblanc/ukbb/plink2-files/ukb_imp_chr{chr}_v3",
+        gp_prefix = "{scratch}/ukbb/plink2-files/ukb_imp_chr{chr}_v3",
         tvec_prefix = "{root}/data/ukbb-hgdp/calculate_Tm/{dataset}/Tvec",
         out_prefix = "{root}/data/ukbb-hgdp/calculate_Tm/{dataset}/"
-    shell:
+    shell: # need to change this r script too
         """
         Rscript code/calculate_Tm/project_Tvec_chr.R {params.tp_prefix} {params.gp_prefix} {params.tvec_prefix} {params.out_prefix} {input.overlap_snps} {output}
         """
@@ -119,7 +134,7 @@ rule concat_chr_Tm:
 
 rule format_covars:
     input:
-        fam = "/scratch/jgblanc/ukbb/plink2-files/ukb_imp_chr22_v3.psam",
+        fam = "{scratch}/ukbb/plink2-files/ukb_imp_chr22_v3.psam",
         TGWAS = "{root}/data/ukbb-hgdp/calculate_Tm/{dataset}/TGWAS.txt",
         aar = "/gpfs/data/berg-lab/data/ukbb/phenotypes/age_at_recruitment_21022.txt",
         sex = "/gpfs/data/berg-lab/data/ukbb/phenotypes/genetic_sex_22001.txt",
@@ -134,14 +149,14 @@ rule format_covars:
 
 rule run_gwas_uncorrected:
     input:
-        genos = "/scratch/jgblanc/ukbb/plink2-files/ukb_imp_chr{chr}_v3.pgen",
+        genos = "{scratch}/ukbb/plink2-files/ukb_imp_chr{chr}_v3.pgen",
         covar = "{root}/data/ukbb-hgdp/run_gwas/{dataset}/covars.txt",
         pheno = "{root}/data/phenotypes/StandingHeight_50.txt",
 	snp_list = "{root}/data/ukbb-hgdp/variants/{dataset}/snps_chr{chr}.txt"
     output:
         "{root}/data/ukbb-hgdp/run_gwas/effect_sizes/{dataset}/ukb_imp_chr{chr}_v3.Height.glm.linear"
     params:
-        pfile = "/scratch/jgblanc/ukbb/plink2-files/ukb_imp_chr{chr}_v3",
+        pfile = "{scratch}/ukbb/plink2-files/ukb_imp_chr{chr}_v3",
         out = "{root}/data/ukbb-hgdp/run_gwas/effect_sizes/{dataset}/ukb_imp_chr{chr}_v3"
     shell:
         """
@@ -158,18 +173,41 @@ rule run_gwas_uncorrected:
 
 
 ### Rule to just include FGr
-
+rule run_gwas_FGr:
+    input:
+        genos = "{scratch}/ukbb/plink2-files/ukb_imp_chr{chr}_v3.pgen",
+        covar = "{root}/data/ukbb-hgdp/run_gwas/{dataset}/FGr.txt", # need to fix
+        pheno = "{root}/data/phenotypes/StandingHeight_50.txt",
+	    snp_list = "{root}/data/ukbb-hgdp/variants/{dataset}/snps_chr{chr}.txt"
+    output:
+        "{root}/data/ukbb-hgdp/run_gwas/effect_sizes/{dataset}/ukb_imp_chr{chr}_v3-FGr.Height.glm.linear"
+    params:
+        pfile = "{scratch}/ukbb/plink2-files/ukb_imp_chr{chr}_v3",
+        out = "{root}/data/ukbb-hgdp/run_gwas/effect_sizes/{dataset}/ukb_imp_chr{chr}_v3-FGr"
+    shell:
+    # need to edit covar-col-nums
+        """
+        plink2 \
+        --pfile {params.pfile} \
+        --extract {input.snp_list} \
+        --glm hide-covar \
+        --covar {input.covar} \
+        --covar-col-nums 3-5,8-47 \
+        --pheno {input.pheno} \
+        --pheno-name Height \
+        --out {params.out}
+        """
 
 rule run_gwas_PCs:
     input:
-        genos = "/scratch/jgblanc/ukbb/plink2-files/ukb_imp_chr{chr}_v3.pgen",
+        genos = "{scratch}/ukbb/plink2-files/ukb_imp_chr{chr}_v3.pgen",
         covar = "{root}/data/ukbb-hgdp/run_gwas/{dataset}/covars.txt",
         pheno = "{root}/data/phenotypes/StandingHeight_50.txt",
-	      snp_list = "{root}/data/ukbb-hgdp/variants/{dataset}/snps_chr{chr}.txt"
+	    snp_list = "{root}/data/ukbb-hgdp/variants/{dataset}/snps_chr{chr}.txt"
     output:
         "{root}/data/ukbb-hgdp/run_gwas/effect_sizes/{dataset}/ukb_imp_chr{chr}_v3-PCs.Height.glm.linear"
     params:
-        pfile = "/scratch/jgblanc/ukbb/plink2-files/ukb_imp_chr{chr}_v3",
+        pfile = "{scratch}/ukbb/plink2-files/ukb_imp_chr{chr}_v3",
         out = "{root}/data/ukbb-hgdp/run_gwas/effect_sizes/{dataset}/ukb_imp_chr{chr}_v3-PCs"
     shell:
         """

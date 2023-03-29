@@ -83,7 +83,7 @@ b_lat = compute_b(path_to_test = test_prefix, path_to_gwas = gwas_prefix, path_t
 b_lat = as.data.frame(b_lat)
 colnames(b_lat) <- "latitude"
 
-# Compute b for latitude
+# Compute b for longitude
 b_long = compute_b(path_to_test = test_prefix, path_to_gwas = gwas_prefix, path_to_testvec = tvec_file, test_type = "longitude", outpath = out_prefix)
 b_long = as.data.frame(b_long)
 colnames(b_long) <- "longitude"
